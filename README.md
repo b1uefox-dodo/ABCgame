@@ -87,7 +87,7 @@
 ### 安装与启动
 ```bash
 # 1. 克隆代码仓库
-git clone https://github.com/YOUR_USERNAME/ABCgame.git
+git clone https://github.com/b1uefox-dodo/ABCgame.git
 cd ABCgame
 
 # 2. 安装依赖
