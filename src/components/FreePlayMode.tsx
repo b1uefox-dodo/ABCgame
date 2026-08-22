@@ -323,7 +323,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
         ctx.restore();
       });
 
-      // 2. Draw Physics Entities (Super Clean, High-Contrast 3D Toy Cards)
+      // 2. Draw Physics Entities (Pure Crisp Circular 3D Toy Badges - Zero Fog / 100% Vibrant)
       world.entities.forEach(ent => {
         ctx.save();
         ctx.translate(ent.x, ent.y);
@@ -334,72 +334,65 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
         ctx.scale(ent.scale, ent.scale);
 
         const r = ent.radius;
-        const w = r * 1.75;
-        const h = r * 1.85;
         const baseColor = ent.color || '#3B82F6';
 
-        // 1. Soft Floor Shadow Oval (Zero-GPU-overhead crisp shadow)
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+        // 1. Soft Crisp Floor Shadow (Oval right beneath badge)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.14)';
         ctx.beginPath();
-        ctx.ellipse(0, h / 2 + 3, w * 0.45, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, r + 4, r * 0.85, 6, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // 2. Main Card Body (Crisp Pure White Base with Soft Tint)
+        // 2. Solid Pure White Circular Base (100% Opaque, No Fog, No Haze)
         ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
-        ctx.roundRect(-w / 2, -h / 2, w, h, 20);
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
         ctx.fill();
 
-        // 3. Card Colored Border
-        ctx.lineWidth = 3.5;
+        // 3. Thick Vibrant Colored Border Ring
+        ctx.lineWidth = 5;
         ctx.strokeStyle = baseColor;
         ctx.stroke();
 
-        // 4. Subtle pastel colored inner floor banner
-        ctx.fillStyle = `${baseColor}18`;
-        ctx.beginPath();
-        ctx.roundRect(-w / 2 + 3, -h / 2 + 3, w - 6, h - 6, 17);
-        ctx.fill();
-
-        // 5. Big Clean Emoji (Centered, crystal-clear, zero fog/blur)
-        ctx.font = `${r * 1.15}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+        // 4. Large Crisp Vibrant Emoji (Zero Overlays, 100% Pure Clarity)
+        ctx.font = `${r * 1.25}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(ent.emoji, 0, -h * 0.08);
+        ctx.fillText(ent.emoji, 0, -r * 0.08);
 
-        // 6. Top-Right Floating Symbol Badge (Letter/Number)
-        const badgeSize = 22;
-        const badgeX = w / 2 - badgeSize / 2 - 4;
-        const badgeY = -h / 2 + badgeSize / 2 + 4;
+        // 5. Top-Right Floating Symbol Badge (Letter/Number)
+        const badgeR = 13;
+        const badgeX = r * 0.65;
+        const badgeY = -r * 0.65;
+        
         ctx.fillStyle = baseColor;
         ctx.beginPath();
-        ctx.arc(badgeX, badgeY, 12, 0, Math.PI * 2);
+        ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
         ctx.fill();
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.strokeStyle = '#FFFFFF';
         ctx.stroke();
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = '900 12px "Fredoka", sans-serif';
+        ctx.font = '900 13px "Fredoka", sans-serif';
         ctx.fillText(ent.symbol, badgeX, badgeY + 4);
 
-        // 7. Bottom Name Pill Label
+        // 6. Bottom Clean Subtitle Pill (100% Solid Pure White Pill with High Contrast Text)
         if (ent.subtitle) {
-          const pillW = w - 16;
+          const pillW = Math.min(r * 1.7, 82);
           const pillH = 22;
-          const pillY = h / 2 - pillH / 2 - 6;
+          const pillY = r * 0.62;
 
           ctx.fillStyle = '#FFFFFF';
           ctx.beginPath();
-          ctx.roundRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
+          ctx.roundRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, 11);
           ctx.fill();
-          ctx.lineWidth = 1.5;
-          ctx.strokeStyle = `${baseColor}44`;
+          ctx.lineWidth = 1.8;
+          ctx.strokeStyle = baseColor;
           ctx.stroke();
 
           ctx.fillStyle = '#0F172A';
           ctx.font = 'bold 12px "Fredoka", "PingFang SC", "Microsoft YaHei", sans-serif';
-          ctx.fillText(ent.subtitle, 0, pillY + 3.5);
+          ctx.fillText(ent.subtitle, 0, pillY + 4);
         }
 
         ctx.restore();
