@@ -123,7 +123,7 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     setBalloons(newBalloons);
 
     // Voice announcement
-    soundEngine.speakPrompt(`请在键盘上找到并按下：字母 ${targetSymbol}，${targetNameCn}！`);
+    soundEngine.speakLetterFeedback(targetSymbol, targetNameEn, targetNameCn, 0);
     setFeedbackText(`寻找目标：【${targetSymbol}】${targetNameCn} ${targetEmoji}`);
   };
 
@@ -193,7 +193,7 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
   const speakPromptAgain = () => {
     if (!currentTarget) return;
     soundEngine.playPop();
-    soundEngine.speakPrompt(`请按键盘上的【${currentTarget.symbol}】！${currentTarget.nameCn}！`);
+    soundEngine.speakLetterFeedback(currentTarget.symbol, currentTarget.nameEn, currentTarget.nameCn, 0);
   };
 
   return (

@@ -60,9 +60,9 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
     setVoiceLang(next);
     soundEngine.setVoiceLanguage(next);
     soundEngine.playPop();
-    if (next === 'bilingual') soundEngine.speak('已开启中英双语发音！');
-    if (next === 'en') soundEngine.speak('English voice only!', 'en');
-    if (next === 'zh') soundEngine.speak('已开启纯中文发音！');
+    if (next === 'bilingual') soundEngine.playVoiceFile('/audio/prompts/mode_bilingual.m4a');
+    if (next === 'en') soundEngine.playVoiceFile('/audio/prompts/mode_en.m4a');
+    if (next === 'zh') soundEngine.playVoiceFile('/audio/prompts/mode_zh.m4a');
   };
 
   const toggleFullscreen = () => {

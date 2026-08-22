@@ -67,7 +67,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
     if (key === ' ' || key === 'Space') {
       world.triggerSuperConfettiParty();
       soundEngine.playFanfare();
-      soundEngine.speak('彩虹礼炮大狂欢！');
+      soundEngine.playVoiceFile('/audio/prompts/confetti.m4a');
       return;
     }
 
@@ -204,6 +204,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
 
   const triggerSurpriseGiftBox = () => {
     soundEngine.playMagic();
+    soundEngine.playVoiceFile('/audio/prompts/gift.m4a');
     const surprises = [
       { emoji: '🦄', title: '七彩独角兽！' },
       { emoji: '👑', title: '金色大皇冠！' },
@@ -255,7 +256,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
   const triggerVacuumMonster = () => {
     setIsVacuumActive(true);
     soundEngine.playVacuum();
-    soundEngine.speak('咕噜咕噜~ 吸尘怪兽把房间打扫干净啦！');
+    soundEngine.playVoiceFile('/audio/prompts/vacuum.m4a');
 
     const world = physicsWorldRef.current;
     world.clearEntities();

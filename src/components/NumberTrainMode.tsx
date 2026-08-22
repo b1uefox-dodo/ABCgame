@@ -62,8 +62,8 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
     setIsTrainDeparting(false);
 
     if (onTargetKeyChange) onTargetKeyChange('1');
-    soundEngine.speakPrompt('小火车进站啦！请按数字 1，装入第 1 节车厢！');
-    setPromptMessage('🚂 请按数字 【1】 装入货物！');
+    soundEngine.speakNumberFeedback(1, '', '');
+    setPromptMessage('🚂 请按 【1】 装入货物！');
   };
 
   useEffect(() => {
@@ -96,7 +96,7 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
       if (nextIdx < trainCars.length) {
         const nextExpected = trainCars[nextIdx].expectedNum;
         if (onTargetKeyChange) onTargetKeyChange(`${nextExpected}`);
-        setPromptMessage(`太棒啦！接下来请按数字 【${nextExpected}】！`);
+        setPromptMessage(`太棒啦！接下来请按 【${nextExpected}】！`);
       } else {
         // FULL TRAIN COMPLETE! DEPARTURE CELEBRATION!
         handleTrainFull();
@@ -104,7 +104,7 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
     } else if (!isNaN(num)) {
       // Wrong number
       soundEngine.playBoing();
-      setPromptMessage(`这是数字 ${num} 哦，当前车厢需要数字 【${targetCar.expectedNum}】！`);
+      setPromptMessage(`这是 【${num}】 哦，当前车厢需要 【${targetCar.expectedNum}】！`);
     }
   }, [latestKeyPress]);
 

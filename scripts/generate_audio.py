@@ -1,29 +1,27 @@
 import os
 import subprocess
-import json
+import shutil
 
-# Ensure directories exist
-os.makedirs("public/audio/letters", exist_ok=True)
-os.makedirs("public/audio/numbers", exist_ok=True)
+modes = ['bilingual', 'en', 'zh']
+for m in modes:
+    os.makedirs(f"public/audio/letters/{m}", exist_ok=True)
+    os.makedirs(f"public/audio/numbers/{m}", exist_ok=True)
+
 os.makedirs("public/audio/eggs", exist_ok=True)
 os.makedirs("public/audio/prompts", exist_ok=True)
 
-def generate_voice_file(text, output_path):
+def generate_voice(text, voice, output_path, rate="165"):
     aiff_path = output_path.replace(".m4a", ".aiff")
-    # Generate speech using macOS Tingting voice (friendly clear Mandarin + English)
-    cmd1 = ["say", "-v", "Tingting", "-r", "165", text, "-o", aiff_path]
+    cmd1 = ["say", "-v", voice, "-r", rate, text, "-o", aiff_path]
     subprocess.run(cmd1, check=True)
     
-    # Convert to AAC m4a
     cmd2 = ["afconvert", "-f", "mp4f", "-d", "aac", aiff_path, output_path]
     subprocess.run(cmd2, check=True)
     
-    # Remove temporary aiff
     if os.path.exists(aiff_path):
         os.remove(aiff_path)
-    print(f"Generated: {output_path} <- {text}")
+    print(f"Generated ({voice}): {output_path} <- {text}")
 
-# 1. Letters and Letter Items
 letters_data = {
     'A': [('Apple', '苹果'), ('Astronaut', '宇航员'), ('Alligator', '大鳄鱼'), ('Airplane', '飞机')],
     'B': [('Bear', '小熊'), ('Butterfly', '蝴蝶'), ('Banana', '香蕉'), ('Balloon', '气球')],
@@ -53,21 +51,34 @@ letters_data = {
     'Z': [('Zebra', '斑马'), ('Zoo', '动物园')]
 }
 
+# 1. Letters in 3 Language Modes (Direct letter pronunciation, no '字母'/'Letter')
 for letter, items in letters_data.items():
-    # Base letter sound
     primary_en, primary_cn = items[0]
-    generate_voice_file(f"字母 {letter}，{primary_en}，{primary_cn}！", f"public/audio/letters/{letter}.m4a")
+    
+    # Base letters
+    generate_voice(f"{letter}，{primary_en}，{primary_cn}！", "Tingting", f"public/audio/letters/bilingual/{letter}.m4a")
+    generate_voice(f"{letter}, {primary_en}!", "Samantha", f"public/audio/letters/en/{letter}.m4a", rate="160")
+    generate_voice(f"{letter}，{primary_cn}！", "Tingting", f"public/audio/letters/zh/{letter}.m4a")
+    
+    # Also write to root of public/audio/letters/
+    shutil.copyfile(f"public/audio/letters/bilingual/{letter}.m4a", f"public/audio/letters/{letter}.m4a")
+    
     for idx, (name_en, name_cn) in enumerate(items):
-        generate_voice_file(f"字母 {letter}，{name_en}，{name_cn}！", f"public/audio/letters/{letter}_{idx}.m4a")
+        generate_voice(f"{letter}，{name_en}，{name_cn}！", "Tingting", f"public/audio/letters/bilingual/{letter}_{idx}.m4a")
+        generate_voice(f"{letter}, {name_en}!", "Samantha", f"public/audio/letters/en/{letter}_{idx}.m4a", rate="160")
+        generate_voice(f"{letter}，{name_cn}！", "Tingting", f"public/audio/letters/zh/{letter}_{idx}.m4a")
+        
+        # Also copy bilingual to root
+        shutil.copyfile(f"public/audio/letters/bilingual/{letter}_{idx}.m4a", f"public/audio/letters/{letter}_{idx}.m4a")
 
-# 2. Numbers
+# 2. Numbers in 3 Language Modes (Direct number pronunciation, no '数字'/'Number')
 numbers_data = [
     (0, 'Zero', '零', '个神奇蛋'),
     (1, 'One', '一', '只小毛鸡'),
     (2, 'Two', '二', '只小天鹅'),
     (3, 'Three', '三', '只彩蝴蝶'),
     (4, 'Four', '四', '只跳跳蛙'),
-    (5, 'Five', '五', '只金星星'),
+    (5, 'Five', '五', '颗金星星'),
     (6, 'Six', '六', '只海豚宝宝'),
     (7, 'Seven', '七', '道七彩虹'),
     (8, 'Eight', '八', '只小章鱼'),
@@ -75,42 +86,24 @@ numbers_data = [
 ]
 
 for num, name_en, name_cn, count_str in numbers_data:
-    generate_voice_file(f"数字 {num}，{name_en}，{name_cn}，{num} {count_str}！", f"public/audio/numbers/{num}.m4a")
+    # Bilingual: "5，Five，五，5 颗金星星！"
+    generate_voice(f"{num}，{name_en}，{name_cn}，{num} {count_str}！", "Tingting", f"public/audio/numbers/bilingual/{num}.m4a")
+    # English only: "5, Five!"
+    generate_voice(f"{num}, {name_en}!", "Samantha", f"public/audio/numbers/en/{num}.m4a", rate="160")
+    # Chinese only: "5，五，5 颗金星星！"
+    generate_voice(f"{num}，{name_cn}，{num} {count_str}！", "Tingting", f"public/audio/numbers/zh/{num}.m4a")
+    
+    # Also copy bilingual to root of public/audio/numbers/
+    shutil.copyfile(f"public/audio/numbers/bilingual/{num}.m4a", f"public/audio/numbers/{num}.m4a")
 
-# 3. Easter Eggs
-eggs_data = [
-    ('CAT', 'Cat，小猫咪，喵喵喵！'),
-    ('DOG', 'Dog，小狗，汪汪汪！'),
-    ('SUN', 'Sun，太阳公公出来啦！'),
-    ('CAR', 'Car，小汽车，嘀嘀叭叭！'),
-    ('BUS', 'Bus，大巴士出发！'),
-    ('PIG', 'Pig，小猪，呼噜呼噜！'),
-    ('FOX', 'Fox，小狐狸！'),
-    ('FLY', 'Fly，飞翔！'),
-    ('STAR', 'Star，满天繁星！'),
-    ('FISH', 'Fish，小鱼游啊游！'),
-    ('LOVE', 'Love，满满的爱！'),
-    ('RAIN', 'Rain，下雨啦！'),
-    ('ICE', 'Ice，冰晶魔法！'),
-    ('BEE', 'Bee，小蜜蜂嗡嗡嗡！')
-]
+# 3. Language Switch Announcement Prompts
+generate_voice("已开启中英双语发音！", "Tingting", "public/audio/prompts/mode_bilingual.m4a")
+generate_voice("English voice mode activated!", "Samantha", "public/audio/prompts/mode_en.m4a", rate="160")
+generate_voice("已开启纯中文发音！", "Tingting", "public/audio/prompts/mode_zh.m4a")
 
-for egg_word, prompt_text in eggs_data:
-    generate_voice_file(prompt_text, f"public/audio/eggs/{egg_word}.m4a")
+# 4. Quest & Game Mode Prompts
+generate_voice("请在键盘上找到目标并按下！", "Tingting", "public/audio/prompts/balloon_start.m4a")
+generate_voice("小火车进站啦，按数字键装满车厢吧！", "Tingting", "public/audio/prompts/train_start.m4a")
+generate_voice("太棒啦，答对啦！", "Tingting", "public/audio/prompts/correct.m4a")
 
-# 4. Special Prompts
-prompts_data = [
-    ('confetti', '彩虹礼炮大狂欢！'),
-    ('gift', '神秘惊喜盲盒来啦！'),
-    ('vacuum', '咕噜咕噜，怪物吸尘器出动！'),
-    ('goodbye', '宝宝再见，下次再来一起探险哦！'),
-    ('correct', '太棒啦，答对啦！'),
-    ('balloon_start', '请在键盘上找到目标字母或数字！'),
-    ('train_start', '小火车进站啦，按数字装满车厢吧！'),
-    ('whistle', '呜——呜——！小火车鸣笛啦！')
-]
-
-for p_name, p_text in prompts_data:
-    generate_voice_file(p_text, f"public/audio/prompts/{p_name}.m4a")
-
-print("All audio files generated successfully!")
+print("All root and multi-language audio files refreshed without any prefixes!")

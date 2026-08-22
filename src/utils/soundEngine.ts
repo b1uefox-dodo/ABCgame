@@ -1,4 +1,4 @@
-// High-performance, zero-latency Audio & Speech Engine with pre-rendered native audio files
+// High-performance, zero-latency Audio & Speech Engine with pre-rendered native audio files and instant cache
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
@@ -7,6 +7,7 @@ class SoundEngine {
   private bgmTimer: number | null = null;
   private voiceLanguage: 'bilingual' | 'en' | 'zh' = 'bilingual';
   private currentAudio: HTMLAudioElement | null = null;
+  private audioCache: Map<string, HTMLAudioElement> = new Map();
   private isUnlocked: boolean = false;
 
   constructor() {
@@ -39,6 +40,7 @@ class SoundEngine {
       }
       if (this.currentAudio) {
         this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
         this.currentAudio = null;
       }
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -59,22 +61,28 @@ class SoundEngine {
     return this.voiceLanguage;
   }
 
-  // --- Real Audio File Player (100% Reliable Native Voice) ---
+  // --- Real Audio File Player (100% Reliable Native Voice with Zero Latency) ---
 
   public playVoiceFile(url: string) {
     if (this.isMuted) return;
     try {
       if (this.currentAudio) {
         this.currentAudio.pause();
-        this.currentAudio = null;
+        this.currentAudio.currentTime = 0;
       }
-      const audio = new Audio(url);
-      audio.volume = 1.0;
+      let audio = this.audioCache.get(url);
+      if (!audio) {
+        audio = new Audio(url);
+        audio.volume = 1.0;
+        this.audioCache.set(url, audio);
+      } else {
+        audio.currentTime = 0;
+      }
       this.currentAudio = audio;
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(err => {
-          console.warn('Audio play failed:', err);
+          console.warn('Audio play failed for', url, err);
         });
       }
     } catch (e) {
@@ -82,33 +90,18 @@ class SoundEngine {
     }
   }
 
-  public speakLetterFeedback(letter: string, itemName: string, itemNameCn: string, itemIndex: number = 0) {
+  public speakLetterFeedback(letter: string, itemName?: string, itemNameCn?: string, itemIndex: number = 0) {
     if (this.isMuted) return;
     const upper = letter.toUpperCase();
-    const urlWithIndex = `/audio/letters/${upper}_${itemIndex}.m4a`;
-    const urlBase = `/audio/letters/${upper}.m4a`;
-
-    // Attempt item specific voice file first
-    const audio = new Audio();
-    audio.volume = 1.0;
-    audio.src = urlWithIndex;
-    audio.onerror = () => {
-      // Fallback to base letter audio
-      this.playVoiceFile(urlBase);
-    };
-    audio.oncanplaythrough = () => {
-      if (this.currentAudio) {
-        this.currentAudio.pause();
-      }
-      this.currentAudio = audio;
-      audio.play().catch(() => {});
-    };
-    audio.load();
+    const lang = this.voiceLanguage || 'bilingual';
+    const urlWithIndex = `/audio/letters/${lang}/${upper}_${itemIndex}.m4a`;
+    this.playVoiceFile(urlWithIndex);
   }
 
-  public speakNumberFeedback(num: number, nameEn: string, nameCn: string, countStr?: string) {
+  public speakNumberFeedback(num: number, nameEn?: string, nameCn?: string, countStr?: string) {
     if (this.isMuted) return;
-    this.playVoiceFile(`/audio/numbers/${num}.m4a`);
+    const lang = this.voiceLanguage || 'bilingual';
+    this.playVoiceFile(`/audio/numbers/${lang}/${num}.m4a`);
   }
 
   public playEggVoice(word: string) {

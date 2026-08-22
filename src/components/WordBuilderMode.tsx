@@ -48,9 +48,7 @@ export const WordBuilderMode: React.FC<WordBuilderModeProps> = ({
     setIsCompleted(false);
     if (onTargetKeyChange) onTargetKeyChange(targetChar);
 
-    soundEngine.speakPrompt(
-      `${currentPuzzle.nameCn}的英文是 ${currentPuzzle.word}！请在键盘上按下缺少的字母：【${targetChar}】！`
-    );
+    soundEngine.speakLetterFeedback(targetChar, currentPuzzle.word, currentPuzzle.nameCn, 0);
   }, [puzzleIndex]);
 
   // Handle incoming keyboard press
@@ -64,9 +62,7 @@ export const WordBuilderMode: React.FC<WordBuilderModeProps> = ({
       setIsCompleted(true);
       soundEngine.playSoundByType(currentPuzzle.soundType);
       soundEngine.playSparkle();
-      soundEngine.speak(
-        `${currentPuzzle.word.split('').join(' ')}，${currentPuzzle.word}！${currentPuzzle.nameCn}！太聪明啦！`
-      );
+      soundEngine.playEggVoice(currentPuzzle.word);
 
       confetti({
         particleCount: 70,
@@ -82,15 +78,13 @@ export const WordBuilderMode: React.FC<WordBuilderModeProps> = ({
       }, 2500);
     } else if (pressed.length === 1 && pressed >= 'A' && pressed <= 'Z') {
       soundEngine.playBoing();
-      soundEngine.speakPrompt(`这是字母 ${pressed} 哦，快按 【${targetChar}】 补全单词！`);
+      soundEngine.speakLetterFeedback(pressed, '', '', 0);
     }
   }, [latestKeyPress]);
 
   const speakClue = () => {
     soundEngine.playPop();
-    soundEngine.speakPrompt(
-      `${currentPuzzle.nameCn} ${currentPuzzle.word}，请按下字母 【${targetChar}】！`
-    );
+    soundEngine.speakLetterFeedback(targetChar, currentPuzzle.word, currentPuzzle.nameCn, 0);
   };
 
   return (
