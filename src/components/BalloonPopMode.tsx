@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import { LETTERS_DATA, NUMBERS_DATA } from '../data/gameData';
 import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
-import confetti from 'canvas-confetti';
-import { Star, Sparkles, Volume2, Trophy, HelpCircle } from 'lucide-react';
+import { Volume2, Trophy, Flame, Sparkles } from 'lucide-react';
 
 interface BalloonItem {
   id: string;
@@ -14,7 +14,7 @@ interface BalloonItem {
   nameEn: string;
   color: string;
   x: number; // percentage 10% to 90%
-  y: number; // percentage
+  y: number; // percentage 10% to 100%
   speed: number;
   isTarget: boolean;
   isPopping?: boolean;
@@ -22,14 +22,14 @@ interface BalloonItem {
 
 interface BalloonPopModeProps {
   latestKeyPress: KeyPress | null;
-  onTargetKeyChange?: (key: string | null) => void;
   onSuccessCount?: () => void;
+  onTargetKeyChange?: (key: string) => void;
 }
 
 export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
   latestKeyPress,
-  onTargetKeyChange,
-  onSuccessCount
+  onSuccessCount,
+  onTargetKeyChange
 }) => {
   const [balloons, setBalloons] = useState<BalloonItem[]>([]);
   const [currentTarget, setCurrentTarget] = useState<{
@@ -47,8 +47,8 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
 
   // Start new round / target
   const startNewTarget = () => {
-    // 70% letters, 30% numbers
-    const isLetter = Math.random() > 0.3;
+    // 60% letters, 40% numbers
+    const isLetter = Math.random() > 0.4;
     let targetSymbol = '';
     let targetEmoji = '';
     let targetNameCn = '';
@@ -122,8 +122,12 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
 
     setBalloons(newBalloons);
 
-    // Voice announcement
-    soundEngine.speakLetterFeedback(targetSymbol, targetNameEn, targetNameCn, 0);
+    // Voice announcement (Number vs Letter)
+    if (targetObj.type === 'number') {
+      soundEngine.speakNumberFeedback(parseInt(targetSymbol, 10));
+    } else {
+      soundEngine.speakLetterFeedback(targetSymbol, targetNameEn, targetNameCn, 0);
+    }
     setFeedbackText(`寻找目标：【${targetSymbol}】${targetNameCn} ${targetEmoji}`);
   };
 
@@ -160,7 +164,13 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
       // MATCH! POP BALLOON!
       soundEngine.playPop();
       soundEngine.playSparkle();
-      soundEngine.speak(`太棒啦！按对了 ${target}！`);
+      
+      // Target voice confirmation
+      if (currentTarget.type === 'number') {
+        soundEngine.speakNumberFeedback(parseInt(target, 10));
+      } else {
+        soundEngine.speakLetterFeedback(target, currentTarget.nameEn, currentTarget.nameCn, 0);
+      }
 
       confetti({
         particleCount: 50,
@@ -186,122 +196,132 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
       soundEngine.playBoing();
       setStreak(0);
       setFeedbackText(`你按下了【${pressed}】，再找找看【${target}】在哪里吧！💡`);
-      soundEngine.speakPrompt(`这是 ${pressed} 哦，快按 ${target}！`);
+      
+      const numVal = parseInt(pressed, 10);
+      if (!isNaN(numVal)) {
+        soundEngine.speakNumberFeedback(numVal);
+      } else if (pressed.length === 1 && pressed >= 'A' && pressed <= 'Z') {
+        soundEngine.speakLetterFeedback(pressed, '', '', 0);
+      }
     }
   }, [latestKeyPress]);
 
   const speakPromptAgain = () => {
     if (!currentTarget) return;
     soundEngine.playPop();
-    soundEngine.speakLetterFeedback(currentTarget.symbol, currentTarget.nameEn, currentTarget.nameCn, 0);
+    if (currentTarget.type === 'number') {
+      soundEngine.speakNumberFeedback(parseInt(currentTarget.symbol, 10));
+    } else {
+      soundEngine.speakLetterFeedback(currentTarget.symbol, currentTarget.nameEn, currentTarget.nameCn, 0);
+    }
   };
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none">
-      {/* Top Header Mission Quest Board */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 w-11/12 max-w-xl animate-pop-in">
-        <div className="flex items-center justify-between px-4 py-3 bg-white/90 backdrop-blur-xl rounded-3xl border-4 border-yellow-300 shadow-2xl">
-          {/* Target Symbol Highlight */}
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-pink-500 text-white flex items-center justify-center text-3xl font-black shadow-md animate-bounce">
+      {/* Top Banner Info */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 w-11/12 max-w-xl">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-xl rounded-3xl border-4 border-yellow-300 shadow-xl">
+          {/* Target Display */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black text-slate-500">寻找目标:</span>
+            <div className="px-3 py-1 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-black text-xl shadow-md animate-pulse">
               {currentTarget?.symbol}
             </div>
-            <div className="text-left">
-              <div className="text-xs font-black text-slate-400 uppercase">
-                任务目标
-              </div>
-              <div className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-1.5">
-                <span>按键:</span>
-                <span className="text-pink-600 text-xl font-black">
-                  【{currentTarget?.symbol}】
-                </span>
-                <span>{currentTarget?.emoji}</span>
-                <span className="text-slate-600">{currentTarget?.nameCn}</span>
-              </div>
-            </div>
+            <span className="text-2xl animate-bounce-soft">{currentTarget?.emoji}</span>
+            <span className="text-sm font-black text-slate-700">{currentTarget?.nameCn}</span>
           </div>
 
-          {/* Voice Repeat & Score */}
+          {/* Repeat Voice Button */}
+          <button
+            onClick={speakPromptAgain}
+            className="p-2 rounded-2xl bg-yellow-100 hover:bg-yellow-200 text-yellow-900 transition active:scale-95 shadow-sm flex items-center gap-1"
+            title="再听一遍"
+          >
+            <Volume2 className="w-5 h-5 text-amber-600" />
+            <span className="text-xs font-black">再听一遍</span>
+          </button>
+
+          {/* Stats */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={speakPromptAgain}
-              className="p-2.5 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-900 transition active:scale-95 shadow-sm"
-              title="重复语音提示"
-            >
-              <Volume2 className="w-5 h-5" />
-            </button>
-            <div className="flex flex-col items-end">
-              <span className="flex items-center gap-1 text-amber-500 font-black text-lg">
-                <Star className="w-5 h-5 fill-amber-400" /> {score}
-              </span>
-              {streak > 1 && (
-                <span className="text-[11px] font-black text-pink-600 animate-pulse">
-                  🔥 {streak} 连胜!
-                </span>
-              )}
+            <div className="flex items-center gap-1 text-amber-500 font-black text-sm">
+              <Trophy className="w-4 h-4" /> {score}
             </div>
+            {streak > 1 && (
+              <div className="flex items-center gap-0.5 text-rose-500 font-black text-xs bg-rose-100 px-2 py-0.5 rounded-full animate-bounce">
+                <Flame className="w-3.5 h-3.5" /> {streak}连击
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Floating Balloons Playground */}
-      <div className="absolute inset-0 pt-36 pb-48 pointer-events-none">
+      {/* Floating Prompt Bar */}
+      <div className="absolute top-36 left-1/2 -translate-x-1/2 z-10">
+        <span className="px-4 py-1.5 rounded-full bg-slate-900/60 backdrop-blur-md text-white font-black text-xs sm:text-sm shadow-lg animate-pop-in">
+          {feedbackText}
+        </span>
+      </div>
+
+      {/* Balloon Canvas Playground Area */}
+      <div className="relative w-full h-full">
         {balloons.map(b => (
           <div
             key={b.id}
-            className={`absolute transition-transform duration-300 flex flex-col items-center pointer-events-auto cursor-pointer ${
-              b.isPopping ? 'scale-150 opacity-0 duration-200' : 'animate-wiggle'
+            onClick={() => {
+              // Clicking also triggers press
+              if (currentTarget && b.symbol === currentTarget.symbol) {
+                soundEngine.playPop();
+                if (currentTarget.type === 'number') {
+                  soundEngine.speakNumberFeedback(parseInt(currentTarget.symbol, 10));
+                } else {
+                  soundEngine.speakLetterFeedback(currentTarget.symbol, currentTarget.nameEn, currentTarget.nameCn, 0);
+                }
+                setScore(s => s + 10);
+                setStreak(st => st + 1);
+                if (onSuccessCount) onSuccessCount();
+                setBalloons(prev =>
+                  prev.map(item => (item.id === b.id ? { ...item, isPopping: true } : item))
+                );
+                setTimeout(startNewTarget, 1000);
+              }
+            }}
+            className={`absolute -translate-x-1/2 transition-transform cursor-pointer ${
+              b.isPopping ? 'animate-pop-out scale-150 opacity-0 pointer-events-none' : 'hover:scale-110 active:scale-95'
             }`}
             style={{
               left: `${b.x}%`,
-              top: `${b.y}%`,
-              transform: 'translate(-50%, -50%)'
-            }}
-            onClick={() => {
-              // Clicking also validates!
-              if (b.isTarget) {
-                // simulate keypress
-                soundEngine.playPop();
-                setScore(s => s + 10);
-                startNewTarget();
-              }
+              top: `${b.y}%`
             }}
           >
             {/* Balloon Body */}
             <div
-              className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-full shadow-2xl flex flex-col items-center justify-center text-white border-2 border-white/40"
+              className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-[50%_50%_50%_50%_/_40%_40%_60%_60%] shadow-2xl flex flex-col items-center justify-center p-2 text-white border-2 border-white/40"
               style={{
                 backgroundColor: b.color,
-                boxShadow: `0 15px 30px ${b.color}66`
+                boxShadow: `0 15px 35px ${b.color}77, inset 0 6px 12px rgba(255,255,255,0.4)`
               }}
             >
-              {/* Highlight shine */}
-              <div className="absolute top-3 left-4 w-4 h-6 rounded-full bg-white/40 rotate-12" />
+              {/* Highlight gleam */}
+              <div className="absolute top-3 left-4 w-4 h-6 rounded-full bg-white/40 rotate-[-25deg] blur-[1px]" />
 
-              {/* Balloon Symbol */}
-              <span className="text-3xl sm:text-4xl font-black drop-shadow-md">
+              {/* Symbol */}
+              <span className="text-3xl sm:text-4xl font-black drop-shadow-md tracking-wider">
                 {b.symbol}
               </span>
-              <span className="text-2xl sm:text-3xl mt-0.5">{b.emoji}</span>
+              <span className="text-xl sm:text-2xl mt-0.5 filter drop-shadow">
+                {b.emoji}
+              </span>
 
-              {/* Balloon knot */}
+              {/* Knot at bottom */}
               <div
-                className="absolute -bottom-2 w-3 h-3 rotate-45"
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border border-white/20"
                 style={{ backgroundColor: b.color }}
               />
+              {/* String */}
+              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-0.5 h-8 bg-white/60" />
             </div>
-
-            {/* Balloon String */}
-            <div className="w-0.5 h-12 bg-slate-400/60" />
           </div>
         ))}
-      </div>
-
-      {/* Feedback Toast at Bottom */}
-      <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-        <div className="px-5 py-2 rounded-full bg-slate-900/80 backdrop-blur-md text-white font-extrabold text-xs sm:text-sm shadow-xl border border-white/20">
-          {feedbackText}
-        </div>
       </div>
     </div>
   );
