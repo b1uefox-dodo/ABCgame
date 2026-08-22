@@ -6,6 +6,23 @@ import { soundEngine } from '../utils/soundEngine';
 import { MascotPet } from './MascotPet';
 import { Sparkles, Gift, Trash2, Volume2, Move } from 'lucide-react';
 
+function shadeColor(color: string, percent: number): string {
+  if (!color || !color.startsWith('#') || color.length < 7) return color || '#3B82F6';
+  let R = parseInt(color.substring(1, 3), 16);
+  let G = parseInt(color.substring(3, 5), 16);
+  let B = parseInt(color.substring(5, 7), 16);
+
+  R = Math.min(255, Math.max(0, Math.floor((R * (100 + percent)) / 100)));
+  G = Math.min(255, Math.max(0, Math.floor((G * (100 + percent)) / 100)));
+  B = Math.min(255, Math.max(0, Math.floor((B * (100 + percent)) / 100)));
+
+  const RR = R.toString(16).padStart(2, '0');
+  const GG = G.toString(16).padStart(2, '0');
+  const BB = B.toString(16).padStart(2, '0');
+
+  return `#${RR}${GG}${BB}`;
+}
+
 interface FreePlayModeProps {
   currentTheme: WorldTheme;
   latestKeyPress: KeyPress | null;
@@ -306,55 +323,87 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
         ctx.restore();
       });
 
-      // 2. Draw Physics Entities (Interactive Cards / Balls)
+      // 2. Draw Physics Entities (Vibrant, Upright 3D Candy Toy Cards)
       world.entities.forEach(ent => {
         ctx.save();
         ctx.translate(ent.x, ent.y);
-        ctx.rotate((ent.rotation * Math.PI) / 180);
+
+        // Clamped soft tilt (always stays upright, never flips upside down)
+        const tilt = Math.max(-20, Math.min(20, ent.rotation));
+        ctx.rotate((tilt * Math.PI) / 180);
         ctx.scale(ent.scale, ent.scale);
 
-        // Clay/Soft Card Bubble Background
-        ctx.shadowColor = 'rgba(0,0,0,0.22)';
-        ctx.shadowBlur = 18;
-        ctx.shadowOffsetY = 8;
+        // 3D Soft Drop Shadow
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.22)';
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 7;
 
-        ctx.fillStyle = '#FFFFFF';
+        // Rich Colored Vibrant 3D Toy Disk (Gradient from theme color to shade)
+        const baseColor = ent.color || '#3B82F6';
+        const grad = ctx.createLinearGradient(0, -ent.radius, 0, ent.radius);
+        grad.addColorStop(0, shadeColor(baseColor, 15)); // lighter top
+        grad.addColorStop(1, shadeColor(baseColor, -25)); // rich bottom
+
+        ctx.fillStyle = grad;
         ctx.beginPath();
         ctx.arc(0, 0, ent.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Outer Ring
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = ent.color;
+        // Outer Crisp White Border Ring
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = '#FFFFFF';
         ctx.stroke();
 
-        // Inner Glow Circle
+        // 3D Glossy Highlight Crescent on Top
         ctx.shadowBlur = 0;
         ctx.shadowOffsetY = 0;
-        ctx.fillStyle = `${ent.color}22`;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
         ctx.beginPath();
-        ctx.arc(0, 0, ent.radius - 4, 0, Math.PI * 2);
+        ctx.ellipse(0, -ent.radius * 0.42, ent.radius * 0.65, ent.radius * 0.32, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Big Emoji Center
-        ctx.font = `${ent.radius * 1.05}px "Fredoka", sans-serif`;
+        // Big Vibrant Center Emoji
+        ctx.font = `${ent.radius * 1.12}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(ent.emoji, 0, -4);
+        ctx.fillText(ent.emoji, 0, -ent.radius * 0.08);
 
-        // Small Symbol Badge at Top Corner
-        ctx.fillStyle = ent.color;
-        ctx.beginPath();
-        ctx.arc(ent.radius * 0.65, -ent.radius * 0.65, 14, 0, Math.PI * 2);
-        ctx.fill();
+        // Top-Right Symbol Badge (White Rounded Pill with Bold Contrasting Color)
+        const badgeX = ent.radius * 0.62;
+        const badgeY = -ent.radius * 0.62;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = 6;
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 12px "Fredoka", sans-serif';
-        ctx.fillText(ent.symbol, ent.radius * 0.65, -ent.radius * 0.65 + 4);
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = baseColor;
+        ctx.stroke();
 
-        // Subtitle Label below
-        ctx.fillStyle = '#1E293B';
-        ctx.font = 'bold 11px "Fredoka", "ZCOOL KuaiLe", sans-serif';
-        ctx.fillText(ent.subtitle, 0, ent.radius * 0.62);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = baseColor;
+        ctx.font = '900 13px "Fredoka", sans-serif';
+        ctx.fillText(ent.symbol, badgeX, badgeY + 4);
+
+        // Bottom High-Contrast White Capsule Pill for Chinese/English Subtitle
+        if (ent.subtitle) {
+          const pillW = Math.min(ent.radius * 1.65, 84);
+          const pillH = 20;
+          const pillY = ent.radius * 0.65;
+
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+          ctx.shadowBlur = 5;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+          ctx.beginPath();
+          ctx.roundRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
+          ctx.fill();
+
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#0F172A';
+          ctx.font = 'bold 11px "Fredoka", "PingFang SC", "Microsoft YaHei", sans-serif';
+          ctx.fillText(ent.subtitle, 0, pillY + 3.5);
+        }
 
         ctx.restore();
       });

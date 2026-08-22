@@ -150,9 +150,12 @@ export class PhysicsWorld {
       e.vy += effectiveGravity;
       e.x += e.vx;
       e.y += e.vy;
+      
+      // Auto-righting upright rotation (keeps characters and text upright)
       e.rotation += e.vRot;
-      e.vRot *= 0.98; // Air resistance on rotation
-      e.vx *= 0.99; // Air resistance on velocity
+      e.vRot *= 0.88;
+      e.rotation += (0 - e.rotation) * 0.08;
+      e.vx *= 0.98; // Air resistance
 
       // Scale transition
       if (e.scale < e.targetScale) {
@@ -164,6 +167,7 @@ export class PhysicsWorld {
         e.y = groundY - e.radius;
         e.vy = -e.vy * this.bounceDamping;
         e.vx *= 0.85; // Floor friction
+        e.vRot = (Math.random() - 0.5) * 2; // Gentle landing wobble
         e.bounceCount++;
         if (Math.abs(e.vy) < 1.2) {
           e.vy = 0;
