@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { LETTERS_DATA, NUMBERS_DATA } from '../data/gameData';
 import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
-import { Volume2, Trophy, Flame, Sparkles } from 'lucide-react';
+import { Volume2, Trophy, Flame, CheckCircle2, XCircle, Sparkles, HelpCircle } from 'lucide-react';
 
 interface BalloonItem {
   id: string;
@@ -41,12 +41,23 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
   } | null>(null);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [feedbackText, setFeedbackText] = useState<string>('准备好了吗？开始打气球啦！🎈');
+
+  // Status feedback: 'idle' | 'correct' | 'wrong' | 'next_round'
+  const [feedbackState, setFeedbackState] = useState<'idle' | 'correct' | 'wrong' | 'next_round'>('idle');
+  const [feedbackMsg, setFeedbackMsg] = useState<string>('准备好了吗？开始打气球啦！🎈');
+  const [lastWrongKey, setLastWrongKey] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
 
   const balloonColors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'];
+  const transitionTimerRef = useRef<number | null>(null);
+  const wrongTimerRef = useRef<number | null>(null);
 
   // Start new round / target
   const startNewTarget = () => {
+    setIsTransitioning(false);
+    setFeedbackState('idle');
+    setLastWrongKey(null);
+
     // 60% letters, 40% numbers
     const isLetter = Math.random() > 0.4;
     let targetSymbol = '';
@@ -81,7 +92,7 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     setCurrentTarget(targetObj);
     if (onTargetKeyChange) onTargetKeyChange(targetSymbol);
 
-    // Create 4-5 balloons including the target balloon
+    // Create balloons
     const newBalloons: BalloonItem[] = [];
     // 1. Target balloon
     newBalloons.push({
@@ -121,6 +132,7 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     }
 
     setBalloons(newBalloons);
+    setFeedbackMsg(`寻找目标：【${targetSymbol}】${targetNameCn} ${targetEmoji}`);
 
     // Voice announcement (Number vs Letter)
     if (targetObj.type === 'number') {
@@ -128,16 +140,21 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     } else {
       soundEngine.speakLetterFeedback(targetSymbol, targetNameEn, targetNameCn, 0);
     }
-    setFeedbackText(`寻找目标：【${targetSymbol}】${targetNameCn} ${targetEmoji}`);
   };
 
   // Initial round
   useEffect(() => {
     startNewTarget();
+    return () => {
+      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+      if (wrongTimerRef.current) clearTimeout(wrongTimerRef.current);
+    };
   }, []);
 
   // Ascend balloons animation frame
   useEffect(() => {
+    if (isTransitioning) return;
+
     const interval = setInterval(() => {
       setBalloons(prev => {
         return prev.map(b => {
@@ -151,63 +168,93 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     }, 40);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isTransitioning]);
+
+  // Handle Correct Pop
+  const handleCorrectHit = (target: string) => {
+    if (isTransitioning || !currentTarget) return;
+
+    setIsTransitioning(true);
+    setFeedbackState('correct');
+    setFeedbackMsg(`🎉 答对啦！击破【${target}】！`);
+
+    soundEngine.playPop();
+    soundEngine.playSparkle();
+    soundEngine.playVoiceFile('/audio/prompts/correct.m4a');
+
+    confetti({
+      particleCount: 65,
+      spread: 70,
+      origin: { y: 0.5 }
+    });
+
+    setScore(s => s + 10);
+    setStreak(st => st + 1);
+    if (onSuccessCount) onSuccessCount();
+
+    // Trigger pop explosion animation on target balloon
+    setBalloons(prev =>
+      prev.map(b => (b.isTarget ? { ...b, isPopping: true } : b))
+    );
+
+    // Transition pacing:
+    // 1. Let explosion and success sound play (600ms)
+    // 2. Show brief "下一题准备中..." intermission (600ms)
+    // Total clear delay before next question ~1200ms with distinct 600ms gap
+    transitionTimerRef.current = window.setTimeout(() => {
+      setFeedbackState('next_round');
+      setFeedbackMsg('✨ 太棒啦！下一题准备中... 🎈');
+      setBalloons([]); // Clear old round balloons for fresh calm moment
+
+      transitionTimerRef.current = window.setTimeout(() => {
+        startNewTarget();
+      }, 650);
+    }, 600);
+  };
+
+  // Handle Incorrect Press
+  const handleWrongHit = (pressed: string, target: string) => {
+    if (isTransitioning) return;
+
+    setFeedbackState('wrong');
+    setLastWrongKey(pressed);
+    setStreak(0);
+    setFeedbackMsg(`💡 刚刚按了【${pressed}】哦，再找找【${target}】在哪里吧！`);
+
+    soundEngine.playBoing();
+
+    const numVal = parseInt(pressed, 10);
+    if (!isNaN(numVal)) {
+      soundEngine.speakNumberFeedback(numVal);
+    } else if (pressed.length === 1 && pressed >= 'A' && pressed <= 'Z') {
+      soundEngine.speakLetterFeedback(pressed, '', '', 0);
+    }
+
+    if (wrongTimerRef.current) clearTimeout(wrongTimerRef.current);
+    wrongTimerRef.current = window.setTimeout(() => {
+      setFeedbackState('idle');
+      if (currentTarget) {
+        setFeedbackMsg(`寻找目标：【${currentTarget.symbol}】${currentTarget.nameCn} ${currentTarget.emoji}`);
+      }
+    }, 1800);
+  };
 
   // Handle incoming keyboard press
   useEffect(() => {
-    if (!latestKeyPress || !currentTarget) return;
+    if (!latestKeyPress || !currentTarget || isTransitioning) return;
 
     const pressed = latestKeyPress.key.toUpperCase();
     const target = currentTarget.symbol.toUpperCase();
 
     if (pressed === target) {
-      // MATCH! POP BALLOON!
-      soundEngine.playPop();
-      soundEngine.playSparkle();
-      
-      // Target voice confirmation
-      if (currentTarget.type === 'number') {
-        soundEngine.speakNumberFeedback(parseInt(target, 10));
-      } else {
-        soundEngine.speakLetterFeedback(target, currentTarget.nameEn, currentTarget.nameCn, 0);
-      }
-
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.5 }
-      });
-
-      setScore(s => s + 10);
-      setStreak(st => st + 1);
-      setFeedbackText(`🎉 太棒啦！成功击破【${target}】！`);
-      if (onSuccessCount) onSuccessCount();
-
-      // Trigger pop animation on target balloon
-      setBalloons(prev =>
-        prev.map(b => (b.isTarget ? { ...b, isPopping: true } : b))
-      );
-
-      setTimeout(() => {
-        startNewTarget();
-      }, 1200);
+      handleCorrectHit(target);
     } else {
-      // Friendly miss
-      soundEngine.playBoing();
-      setStreak(0);
-      setFeedbackText(`你按下了【${pressed}】，再找找看【${target}】在哪里吧！💡`);
-      
-      const numVal = parseInt(pressed, 10);
-      if (!isNaN(numVal)) {
-        soundEngine.speakNumberFeedback(numVal);
-      } else if (pressed.length === 1 && pressed >= 'A' && pressed <= 'Z') {
-        soundEngine.speakLetterFeedback(pressed, '', '', 0);
-      }
+      handleWrongHit(pressed, target);
     }
   }, [latestKeyPress]);
 
   const speakPromptAgain = () => {
-    if (!currentTarget) return;
+    if (!currentTarget || isTransitioning) return;
     soundEngine.playPop();
     if (currentTarget.type === 'number') {
       soundEngine.speakNumberFeedback(parseInt(currentTarget.symbol, 10));
@@ -218,32 +265,58 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none">
-      {/* Top Banner Info */}
+      {/* Top Banner Info & Dynamic Feedback HUD */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 w-11/12 max-w-xl">
-        <div className="flex items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-xl rounded-3xl border-4 border-yellow-300 shadow-xl">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-yellow-300 shadow-xl gap-2">
+          
           {/* Target Display */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-black text-slate-500">寻找目标:</span>
+            <span className="text-xs font-black text-slate-500">目标:</span>
             <div className="px-3 py-1 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-black text-xl shadow-md animate-pulse">
               {currentTarget?.symbol}
             </div>
             <span className="text-2xl animate-bounce-soft">{currentTarget?.emoji}</span>
-            <span className="text-sm font-black text-slate-700">{currentTarget?.nameCn}</span>
+            <span className="text-sm font-black text-slate-700 hidden sm:inline">{currentTarget?.nameCn}</span>
           </div>
 
-          {/* Repeat Voice Button */}
-          <button
-            onClick={speakPromptAgain}
-            className="p-2 rounded-2xl bg-yellow-100 hover:bg-yellow-200 text-yellow-900 transition active:scale-95 shadow-sm flex items-center gap-1"
-            title="再听一遍"
-          >
-            <Volume2 className="w-5 h-5 text-amber-600" />
-            <span className="text-xs font-black">再听一遍</span>
-          </button>
+          {/* Dynamic Interactive Feedback / Action Badge */}
+          <div className="flex-1 flex justify-center">
+            {feedbackState === 'correct' && (
+              <div className="px-3 py-1.5 rounded-2xl bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-md animate-bounce flex items-center gap-1.5 ring-2 ring-emerald-300">
+                <CheckCircle2 className="w-4 h-4 text-emerald-100" />
+                <span>答对啦！太棒了 🎉</span>
+              </div>
+            )}
 
-          {/* Stats */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-amber-500 font-black text-sm">
+            {feedbackState === 'wrong' && (
+              <div className="px-3 py-1.5 rounded-2xl bg-rose-500 text-white font-black text-xs sm:text-sm shadow-md animate-wiggle flex items-center gap-1.5 ring-2 ring-rose-300">
+                <XCircle className="w-4 h-4 text-rose-100" />
+                <span>按了【{lastWrongKey}】❌ 再试试！</span>
+              </div>
+            )}
+
+            {feedbackState === 'next_round' && (
+              <div className="px-3 py-1.5 rounded-2xl bg-indigo-500 text-white font-black text-xs sm:text-sm shadow-md animate-pulse flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-yellow-300 animate-spin-slow" />
+                <span>下一题准备中... 🎈</span>
+              </div>
+            )}
+
+            {feedbackState === 'idle' && (
+              <button
+                onClick={speakPromptAgain}
+                className="px-3 py-1.5 rounded-2xl bg-yellow-100 hover:bg-yellow-200 text-yellow-900 transition active:scale-95 shadow-sm flex items-center gap-1 border border-yellow-300"
+                title="点击再听一遍"
+              >
+                <Volume2 className="w-4 h-4 text-amber-600 animate-pulse" />
+                <span className="text-xs font-black">听音提示 🔊</span>
+              </button>
+            )}
+          </div>
+
+          {/* Stats & Streak */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 text-amber-500 font-black text-sm bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200">
               <Trophy className="w-4 h-4" /> {score}
             </div>
             {streak > 1 && (
@@ -256,9 +329,19 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
       </div>
 
       {/* Floating Prompt Bar */}
-      <div className="absolute top-36 left-1/2 -translate-x-1/2 z-10">
-        <span className="px-4 py-1.5 rounded-full bg-slate-900/60 backdrop-blur-md text-white font-black text-xs sm:text-sm shadow-lg animate-pop-in">
-          {feedbackText}
+      <div className="absolute top-36 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+        <span
+          className={`px-4 py-1.5 rounded-full backdrop-blur-md font-black text-xs sm:text-sm shadow-lg transition-all ${
+            feedbackState === 'correct'
+              ? 'bg-emerald-600 text-white scale-110'
+              : feedbackState === 'wrong'
+              ? 'bg-rose-600 text-white animate-wiggle'
+              : feedbackState === 'next_round'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-slate-900/65 text-white'
+          }`}
+        >
+          {feedbackMsg}
         </span>
       </div>
 
@@ -268,25 +351,17 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
           <div
             key={b.id}
             onClick={() => {
-              // Clicking also triggers press
+              if (isTransitioning) return;
               if (currentTarget && b.symbol === currentTarget.symbol) {
-                soundEngine.playPop();
-                if (currentTarget.type === 'number') {
-                  soundEngine.speakNumberFeedback(parseInt(currentTarget.symbol, 10));
-                } else {
-                  soundEngine.speakLetterFeedback(currentTarget.symbol, currentTarget.nameEn, currentTarget.nameCn, 0);
-                }
-                setScore(s => s + 10);
-                setStreak(st => st + 1);
-                if (onSuccessCount) onSuccessCount();
-                setBalloons(prev =>
-                  prev.map(item => (item.id === b.id ? { ...item, isPopping: true } : item))
-                );
-                setTimeout(startNewTarget, 1000);
+                handleCorrectHit(currentTarget.symbol);
+              } else if (currentTarget) {
+                handleWrongHit(b.symbol, currentTarget.symbol);
               }
             }}
             className={`absolute -translate-x-1/2 transition-transform cursor-pointer ${
-              b.isPopping ? 'animate-pop-out scale-150 opacity-0 pointer-events-none' : 'hover:scale-110 active:scale-95'
+              b.isPopping
+                ? 'animate-pop-out scale-150 opacity-0 pointer-events-none'
+                : 'hover:scale-110 active:scale-95'
             }`}
             style={{
               left: `${b.x}%`,
