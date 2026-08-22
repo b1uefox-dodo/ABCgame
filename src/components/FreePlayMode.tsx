@@ -163,8 +163,8 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
     if (!isNaN(num) && NUMBERS_DATA[num]) {
       const numData = NUMBERS_DATA[num];
 
-      // Spawn multiple count items based on the number! (e.g. 5 ducks)
-      const spawnCount = num === 0 ? 1 : Math.min(num, 9);
+      // Spawn 1 to 3 items per number press for smooth physics and clean visuals
+      const spawnCount = num === 0 ? 1 : Math.min(num, 3);
       for (let i = 0; i < spawnCount; i++) {
         setTimeout(() => {
           const spawnX = (world.width / (spawnCount + 1)) * (i + 1) + (Math.random() - 0.5) * 30;
@@ -323,85 +323,82 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
         ctx.restore();
       });
 
-      // 2. Draw Physics Entities (Vibrant, Upright 3D Candy Toy Cards)
+      // 2. Draw Physics Entities (Super Clean, High-Contrast 3D Toy Cards)
       world.entities.forEach(ent => {
         ctx.save();
         ctx.translate(ent.x, ent.y);
 
-        // Clamped soft tilt (always stays upright, never flips upside down)
-        const tilt = Math.max(-20, Math.min(20, ent.rotation));
+        // Clamped soft tilt (always upright, never inverted)
+        const tilt = Math.max(-15, Math.min(15, ent.rotation));
         ctx.rotate((tilt * Math.PI) / 180);
         ctx.scale(ent.scale, ent.scale);
 
-        // 3D Soft Drop Shadow
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.22)';
-        ctx.shadowBlur = 16;
-        ctx.shadowOffsetY = 7;
-
-        // Rich Colored Vibrant 3D Toy Disk (Gradient from theme color to shade)
+        const r = ent.radius;
+        const w = r * 1.75;
+        const h = r * 1.85;
         const baseColor = ent.color || '#3B82F6';
-        const grad = ctx.createLinearGradient(0, -ent.radius, 0, ent.radius);
-        grad.addColorStop(0, shadeColor(baseColor, 15)); // lighter top
-        grad.addColorStop(1, shadeColor(baseColor, -25)); // rich bottom
 
-        ctx.fillStyle = grad;
+        // 1. Soft Floor Shadow Oval (Zero-GPU-overhead crisp shadow)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
         ctx.beginPath();
-        ctx.arc(0, 0, ent.radius, 0, Math.PI * 2);
+        ctx.ellipse(0, h / 2 + 3, w * 0.45, 6, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Outer Crisp White Border Ring
-        ctx.lineWidth = 3.5;
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.stroke();
-
-        // 3D Glossy Highlight Crescent on Top
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
-        ctx.beginPath();
-        ctx.ellipse(0, -ent.radius * 0.42, ent.radius * 0.65, ent.radius * 0.32, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Big Vibrant Center Emoji
-        ctx.font = `${ent.radius * 1.12}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(ent.emoji, 0, -ent.radius * 0.08);
-
-        // Top-Right Symbol Badge (White Rounded Pill with Bold Contrasting Color)
-        const badgeX = ent.radius * 0.62;
-        const badgeY = -ent.radius * 0.62;
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-        ctx.shadowBlur = 6;
+        // 2. Main Card Body (Crisp Pure White Base with Soft Tint)
         ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
-        ctx.arc(badgeX, badgeY, 14, 0, Math.PI * 2);
+        ctx.roundRect(-w / 2, -h / 2, w, h, 20);
         ctx.fill();
-        ctx.lineWidth = 2.5;
+
+        // 3. Card Colored Border
+        ctx.lineWidth = 3.5;
         ctx.strokeStyle = baseColor;
         ctx.stroke();
 
-        ctx.shadowBlur = 0;
+        // 4. Subtle pastel colored inner floor banner
+        ctx.fillStyle = `${baseColor}18`;
+        ctx.beginPath();
+        ctx.roundRect(-w / 2 + 3, -h / 2 + 3, w - 6, h - 6, 17);
+        ctx.fill();
+
+        // 5. Big Clean Emoji (Centered, crystal-clear, zero fog/blur)
+        ctx.font = `${r * 1.15}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ent.emoji, 0, -h * 0.08);
+
+        // 6. Top-Right Floating Symbol Badge (Letter/Number)
+        const badgeSize = 22;
+        const badgeX = w / 2 - badgeSize / 2 - 4;
+        const badgeY = -h / 2 + badgeSize / 2 + 4;
         ctx.fillStyle = baseColor;
-        ctx.font = '900 13px "Fredoka", sans-serif';
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.stroke();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '900 12px "Fredoka", sans-serif';
         ctx.fillText(ent.symbol, badgeX, badgeY + 4);
 
-        // Bottom High-Contrast White Capsule Pill for Chinese/English Subtitle
+        // 7. Bottom Name Pill Label
         if (ent.subtitle) {
-          const pillW = Math.min(ent.radius * 1.65, 84);
-          const pillH = 20;
-          const pillY = ent.radius * 0.65;
+          const pillW = w - 16;
+          const pillH = 22;
+          const pillY = h / 2 - pillH / 2 - 6;
 
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-          ctx.shadowBlur = 5;
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+          ctx.fillStyle = '#FFFFFF';
           ctx.beginPath();
-          ctx.roundRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
+          ctx.roundRect(-pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
           ctx.fill();
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = `${baseColor}44`;
+          ctx.stroke();
 
-          ctx.shadowBlur = 0;
           ctx.fillStyle = '#0F172A';
-          ctx.font = 'bold 11px "Fredoka", "PingFang SC", "Microsoft YaHei", sans-serif';
+          ctx.font = 'bold 12px "Fredoka", "PingFang SC", "Microsoft YaHei", sans-serif';
           ctx.fillText(ent.subtitle, 0, pillY + 3.5);
         }
 
