@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { soundEngine } from '../utils/soundEngine';
+import { KeyPress } from '../types';
 import confetti from 'canvas-confetti';
 import { Sparkles, Star, Volume2, HelpCircle } from 'lucide-react';
 
@@ -26,7 +27,7 @@ const PUZZLES: WordPuzzle[] = [
 ];
 
 interface WordBuilderModeProps {
-  latestKeyPress: string | null;
+  latestKeyPress: KeyPress | null;
   onTargetKeyChange?: (key: string | null) => void;
   onSuccessCount?: () => void;
 }
@@ -56,7 +57,7 @@ export const WordBuilderMode: React.FC<WordBuilderModeProps> = ({
   useEffect(() => {
     if (!latestKeyPress || isCompleted) return;
 
-    const pressed = latestKeyPress.toUpperCase();
+    const pressed = latestKeyPress.key.toUpperCase();
 
     if (pressed === targetChar) {
       // SUCCESS!

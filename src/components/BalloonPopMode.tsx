@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LETTERS_DATA, NUMBERS_DATA } from '../data/gameData';
+import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
 import confetti from 'canvas-confetti';
 import { Star, Sparkles, Volume2, Trophy, HelpCircle } from 'lucide-react';
@@ -20,7 +21,7 @@ interface BalloonItem {
 }
 
 interface BalloonPopModeProps {
-  latestKeyPress: string | null;
+  latestKeyPress: KeyPress | null;
   onTargetKeyChange?: (key: string | null) => void;
   onSuccessCount?: () => void;
 }
@@ -152,7 +153,7 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
   useEffect(() => {
     if (!latestKeyPress || !currentTarget) return;
 
-    const pressed = latestKeyPress.toUpperCase();
+    const pressed = latestKeyPress.key.toUpperCase();
     const target = currentTarget.symbol.toUpperCase();
 
     if (pressed === target) {

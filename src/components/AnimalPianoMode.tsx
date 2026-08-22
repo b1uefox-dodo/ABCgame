@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PIANO_INSTRUMENTS, NUMBERS_DATA } from '../data/gameData';
+import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
 import { Music, Sparkles, Volume2, BookOpen } from 'lucide-react';
 
@@ -30,7 +31,7 @@ const SONG_GUIDES = [
 ];
 
 interface AnimalPianoModeProps {
-  latestKeyPress: string | null;
+  latestKeyPress: KeyPress | null;
 }
 
 export const AnimalPianoMode: React.FC<AnimalPianoModeProps> = ({ latestKeyPress }) => {
@@ -44,7 +45,7 @@ export const AnimalPianoMode: React.FC<AnimalPianoModeProps> = ({ latestKeyPress
   useEffect(() => {
     if (!latestKeyPress) return;
 
-    const num = parseInt(latestKeyPress, 10);
+    const num = parseInt(latestKeyPress.key, 10);
     if (!isNaN(num) && num >= 1 && num <= 8) {
       const keyObj = PIANO_KEYS[num - 1];
       if (keyObj) {

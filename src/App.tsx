@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { WORLD_THEMES, WorldTheme, EASTER_EGG_WORDS, EasterEggWord } from './data/gameData';
+import { KeyPress } from './types';
 import { HeaderNav, GameMode } from './components/HeaderNav';
 import { FreePlayMode } from './components/FreePlayMode';
 import { BalloonPopMode } from './components/BalloonPopMode';
@@ -16,7 +17,7 @@ export const App: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<GameMode>('free');
   const [currentTheme, setCurrentTheme] = useState<WorldTheme>(WORLD_THEMES[0]);
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const [latestKeyPress, setLatestKeyPress] = useState<string | null>(null);
+  const [latestKeyPress, setLatestKeyPress] = useState<KeyPress | null>(null);
   const [targetKeyHint, setTargetKeyHint] = useState<string | null>(null);
   const [mascotAction, setMascotAction] = useState<string | null>(null);
 
@@ -89,10 +90,15 @@ export const App: React.FC = () => {
   }, []);
 
   // Process key input from physical keyboard or virtual keyboard
+  const keySeqRef = useRef(0);
+
   const dispatchKeyAction = useCallback((key: string) => {
     soundEngine.unlockAudio();
     setActiveKey(key);
-    setLatestKeyPress(key);
+    // Every press gets a unique seq so mode effects re-run even for
+    // repeated presses of the same key
+    keySeqRef.current += 1;
+    setLatestKeyPress({ key, seq: keySeqRef.current });
 
     // Arrow keys triggers mascot action
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
@@ -100,7 +106,6 @@ export const App: React.FC = () => {
       setTimeout(() => setMascotAction(null), 200);
     }
 
-    // Reset latest key press after a tick so same key pressed twice still triggers
     setTimeout(() => {
       setActiveKey(null);
     }, 120);
@@ -119,6 +124,9 @@ export const App: React.FC = () => {
       if (['Space', ' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Backspace'].includes(e.key)) {
         e.preventDefault();
       }
+
+      // Ignore OS key auto-repeat so holding a key down doesn't spam sounds
+      if (e.repeat) return;
 
       // Quick Theme Cycle on CapsLock or Tab
       if (e.key === 'Tab' || e.key === 'CapsLock') {

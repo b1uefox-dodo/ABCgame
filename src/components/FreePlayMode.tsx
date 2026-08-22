@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PhysicsWorld, PhysicsEntity, SparkleParticle } from '../utils/physics';
 import { LETTERS_DATA, NUMBERS_DATA, WorldTheme } from '../data/gameData';
+import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
 import { MascotPet } from './MascotPet';
 import { Sparkles, Gift, Trash2, Volume2, Move } from 'lucide-react';
 
 interface FreePlayModeProps {
   currentTheme: WorldTheme;
-  latestKeyPress: string | null;
+  latestKeyPress: KeyPress | null;
   onKeyDiscovered: (type: 'letter' | 'number', val: string | number) => void;
   onEggTriggered: (word: string) => void;
   mascotAction: string | null;
@@ -58,7 +59,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
     }
     lastKeyTimeRef.current = now;
 
-    const key = latestKeyPress;
+    const key = latestKeyPress.key;
     const upperKey = key.toUpperCase();
     const world = physicsWorldRef.current;
 

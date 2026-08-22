@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NUMBERS_DATA } from '../data/gameData';
+import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
 import confetti from 'canvas-confetti';
 import { Sparkles, Star, Volume2, ArrowRight } from 'lucide-react';
@@ -14,7 +15,7 @@ interface TrainCar {
 }
 
 interface NumberTrainModeProps {
-  latestKeyPress: string | null;
+  latestKeyPress: KeyPress | null;
   onTargetKeyChange?: (key: string | null) => void;
   onSuccessCount?: () => void;
 }
@@ -73,7 +74,7 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
   useEffect(() => {
     if (!latestKeyPress || isTrainDeparting || currentCarIndex >= trainCars.length) return;
 
-    const num = parseInt(latestKeyPress, 10);
+    const num = parseInt(latestKeyPress.key, 10);
     const targetCar = trainCars[currentCarIndex];
 
     if (!isNaN(num) && targetCar && num === targetCar.expectedNum) {
