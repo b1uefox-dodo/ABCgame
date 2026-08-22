@@ -78,7 +78,7 @@ export const WordBuilderMode: React.FC<WordBuilderModeProps> = ({
       }, 2500);
     } else if (pressed.length === 1 && pressed >= 'A' && pressed <= 'Z') {
       soundEngine.playBoing();
-      soundEngine.speakLetterFeedback(pressed, '', '', 0);
+      soundEngine.playWrongPrompt();
     }
   }, [latestKeyPress]);
 

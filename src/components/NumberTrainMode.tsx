@@ -104,6 +104,7 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
     } else if (!isNaN(num)) {
       // Wrong number
       soundEngine.playBoing();
+      soundEngine.playWrongPrompt();
       setPromptMessage(`这是 【${num}】 哦，当前车厢需要 【${targetCar.expectedNum}】！`);
     }
   }, [latestKeyPress]);

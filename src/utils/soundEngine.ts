@@ -109,6 +109,20 @@ class SoundEngine {
     this.playVoiceFile(`/audio/eggs/${word.toUpperCase()}.m4a`);
   }
 
+  public playCorrectPrompt() {
+    if (this.isMuted) return;
+    this.playVoiceFile('/audio/prompts/correct.m4a');
+  }
+
+  public playWrongPrompt() {
+    if (this.isMuted) return;
+    if (this.voiceLanguage === 'en') {
+      this.playVoiceFile('/audio/prompts/wrong_en.m4a');
+    } else {
+      this.playVoiceFile('/audio/prompts/wrong.m4a');
+    }
+  }
+
   public speakPrompt(promptText: string, promptKey?: string) {
     if (this.isMuted) return;
     if (promptKey) {

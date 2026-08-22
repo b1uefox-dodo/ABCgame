@@ -219,16 +219,10 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     setFeedbackState('wrong');
     setLastWrongKey(pressed);
     setStreak(0);
-    setFeedbackMsg(`💡 刚刚按了【${pressed}】哦，再找找【${target}】在哪里吧！`);
+    setFeedbackMsg(`💡 不对哦，刚刚按了【${pressed}】，快找找【${target}】吧！`);
 
     soundEngine.playBoing();
-
-    const numVal = parseInt(pressed, 10);
-    if (!isNaN(numVal)) {
-      soundEngine.speakNumberFeedback(numVal);
-    } else if (pressed.length === 1 && pressed >= 'A' && pressed <= 'Z') {
-      soundEngine.speakLetterFeedback(pressed, '', '', 0);
-    }
+    soundEngine.playWrongPrompt();
 
     if (wrongTimerRef.current) clearTimeout(wrongTimerRef.current);
     wrongTimerRef.current = window.setTimeout(() => {
