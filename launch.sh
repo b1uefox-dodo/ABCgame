@@ -10,7 +10,7 @@ if ! curl -s -m 1 "http://localhost:4173/" >/dev/null 2>&1; then
     lsof -ti :4173 | xargs kill -9 2>/dev/null || true
     
     # Start Vite preview server in background
-    nohup /Users/du/.local/bin/node "$PROJECT_DIR/node_modules/.bin/vite" preview --port 4173 --host 0.0.0.0 > /tmp/abcgame_launch.log 2>&1 &
+    nohup /Users/du/.local/bin/node "$PROJECT_DIR/node_modules/.bin/vite" preview --port 4173 --host 127.0.0.1 > /tmp/abcgame_launch.log 2>&1 &
     
     # Wait until server responds with 200 OK
     for i in {1..25}; do

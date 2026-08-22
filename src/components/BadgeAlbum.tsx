@@ -45,7 +45,7 @@ export const BadgeAlbum: React.FC<BadgeAlbumProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-3 sm:p-6"
     >
       <div
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
         className="relative w-full max-w-3xl max-h-[90vh] bg-white/95 rounded-3xl shadow-2xl border-4 border-amber-300 flex flex-col overflow-hidden animate-pop-in text-slate-800"
       >
         {/* Album Header */}
@@ -56,9 +56,7 @@ export const BadgeAlbum: React.FC<BadgeAlbumProps> = ({
               <h2 className="text-xl sm:text-2xl font-black flex items-center gap-2">
                 🌟 探索收集纪念册
               </h2>
-              <p className="text-xs font-bold opacity-90">
-                记录宝宝每次敲击键盘发现的奇妙宝贝！
-              </p>
+              <p className="text-xs font-bold opacity-90">记录宝宝每次敲击键盘发现的奇妙宝贝！</p>
             </div>
           </div>
           <button
@@ -77,12 +75,12 @@ export const BadgeAlbum: React.FC<BadgeAlbumProps> = ({
           <div className="flex items-center gap-2">
             <Award className="w-5 h-5 text-amber-500" />
             <span className="text-xs sm:text-sm font-extrabold text-slate-700">称号:</span>
-            <span className={`text-sm sm:text-base font-black ${rank.color}`}>
-              {rank.title}
-            </span>
+            <span className={`text-sm sm:text-base font-black ${rank.color}`}>{rank.title}</span>
           </div>
           <div className="flex items-center gap-3 text-xs sm:text-sm font-black text-slate-600">
-            <span>✨ 探索能量: <b className="text-pink-600">{totalScore}</b></span>
+            <span>
+              ✨ 探索能量: <b className="text-pink-600">{totalScore}</b>
+            </span>
           </div>
         </div>
 
@@ -145,7 +143,7 @@ export const BadgeAlbum: React.FC<BadgeAlbumProps> = ({
           {/* LETTERS TAB */}
           {activeTab === 'letters' && (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-              {Object.keys(LETTERS_DATA).map(char => {
+              {Object.keys(LETTERS_DATA).map((char) => {
                 const data = LETTERS_DATA[char];
                 const isUnlocked = discoveredLetters.has(char);
                 const primaryItem = data.items[0];
@@ -173,9 +171,7 @@ export const BadgeAlbum: React.FC<BadgeAlbumProps> = ({
                     >
                       {char}
                     </span>
-                    <span className="text-3xl my-1">
-                      {isUnlocked ? primaryItem.emoji : '❓'}
-                    </span>
+                    <span className="text-3xl my-1">{isUnlocked ? primaryItem.emoji : '❓'}</span>
                     <span className="text-xs font-bold text-slate-700 truncate w-full text-center">
                       {isUnlocked ? primaryItem.nameCn : '未发现'}
                     </span>
@@ -188,7 +184,7 @@ export const BadgeAlbum: React.FC<BadgeAlbumProps> = ({
           {/* NUMBERS TAB */}
           {activeTab === 'numbers' && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-              {NUMBERS_DATA.map(item => {
+              {NUMBERS_DATA.map((item) => {
                 const isUnlocked = discoveredNumbers.has(item.num);
 
                 return (
@@ -214,9 +210,7 @@ export const BadgeAlbum: React.FC<BadgeAlbumProps> = ({
                     >
                       {item.num}
                     </span>
-                    <span className="text-3xl my-1">
-                      {isUnlocked ? item.emoji : '❓'}
-                    </span>
+                    <span className="text-3xl my-1">{isUnlocked ? item.emoji : '❓'}</span>
                     <div className="text-center">
                       <div className="text-xs font-black text-slate-800">
                         {isUnlocked ? `${item.nameCn} (${item.name})` : '未探索'}
@@ -234,7 +228,7 @@ export const BadgeAlbum: React.FC<BadgeAlbumProps> = ({
           {/* EASTER EGGS TAB */}
           {activeTab === 'eggs' && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {EASTER_EGG_WORDS.map(egg => {
+              {EASTER_EGG_WORDS.map((egg) => {
                 const isUnlocked = discoveredEggs.has(egg.word);
 
                 return (
@@ -257,9 +251,7 @@ export const BadgeAlbum: React.FC<BadgeAlbumProps> = ({
                     <span className="text-sm font-black px-2 py-0.5 rounded-lg bg-slate-100 text-indigo-700">
                       {isUnlocked ? egg.word : '???'}
                     </span>
-                    <span className="text-4xl my-1.5">
-                      {isUnlocked ? egg.emoji : '🔒'}
-                    </span>
+                    <span className="text-4xl my-1.5">{isUnlocked ? egg.emoji : '🔒'}</span>
                     <span className="text-xs font-bold text-slate-800 text-center">
                       {isUnlocked ? egg.nameCn : '神秘单词'}
                     </span>

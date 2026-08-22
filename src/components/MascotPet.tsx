@@ -10,8 +10,8 @@ interface MascotPetProps {
 }
 
 export const MascotPet: React.FC<MascotPetProps> = ({
-  themeId,
-  mascotName,
+  themeId: _themeId,
+  mascotName: _mascotName,
   mascotEmoji,
   actionTrigger,
   onMascotClick
@@ -28,11 +28,11 @@ export const MascotPet: React.FC<MascotPetProps> = ({
 
     if (actionTrigger === 'ArrowRight') {
       setFacing('right');
-      setPosX(x => Math.min(window.innerWidth - 120, x + 60));
+      setPosX((x) => Math.min(window.innerWidth - 120, x + 60));
       soundEngine.playBoing();
     } else if (actionTrigger === 'ArrowLeft') {
       setFacing('left');
-      setPosX(x => Math.max(80, x - 60));
+      setPosX((x) => Math.max(80, x - 60));
       soundEngine.playBoing();
     } else if (actionTrigger === 'ArrowUp') {
       setIsJumping(true);
@@ -85,7 +85,8 @@ export const MascotPet: React.FC<MascotPetProps> = ({
       <div
         className="absolute -top-16 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 text-slate-800 font-extrabold text-xs sm:text-sm px-3.5 py-1.5 rounded-2xl shadow-xl border-2 border-indigo-400 animate-float pointer-events-none"
         style={{
-          transform: facing === 'left' ? 'translateX(-50%) scaleX(-1)' : 'translateX(-50%) scaleX(1)'
+          transform:
+            facing === 'left' ? 'translateX(-50%) scaleX(-1)' : 'translateX(-50%) scaleX(1)'
         }}
       >
         <span>{speechBubble}</span>
@@ -97,13 +98,17 @@ export const MascotPet: React.FC<MascotPetProps> = ({
       <div
         onClick={handleTickle}
         className={`cursor-pointer transition-transform duration-200 ${
-          isJumping ? '-translate-y-16 scale-125' : isWiggling ? 'scale-90 rotate-12' : 'animate-bounce-soft'
+          isJumping
+            ? '-translate-y-16 scale-125'
+            : isWiggling
+              ? 'scale-90 rotate-12'
+              : 'animate-bounce-soft'
         }`}
       >
         <div className="relative group">
           {/* Glowing aura */}
           <div className="absolute -inset-2 bg-gradient-to-r from-yellow-300 to-pink-400 rounded-full blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
-          
+
           <div className="relative text-6xl sm:text-7xl filter drop-shadow-2xl active:scale-90 transition-transform">
             {mascotEmoji}
           </div>

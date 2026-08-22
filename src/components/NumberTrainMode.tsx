@@ -3,7 +3,7 @@ import { NUMBERS_DATA } from '../data/gameData';
 import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
 import confetti from 'canvas-confetti';
-import { Sparkles, Star, Volume2, ArrowRight } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 interface TrainCar {
   index: number;
@@ -29,7 +29,9 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
   const [currentCarIndex, setCurrentCarIndex] = useState(0);
   const [isTrainDeparting, setIsTrainDeparting] = useState(false);
   const [trainScore, setTrainScore] = useState(0);
-  const [promptMessage, setPromptMessage] = useState('欢迎来到数字小火车！按数字键给车厢装满货物吧！🚂');
+  const [promptMessage, setPromptMessage] = useState(
+    '欢迎来到数字小火车！按数字键给车厢装满货物吧！🚂'
+  );
 
   // Initialize a train with 5 sequential wagons
   const setupNewTrain = () => {
@@ -84,13 +86,13 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
       soundEngine.speakNumberFeedback(num, '', '');
 
       // Fill current wagon
-      setTrainCars(prev =>
+      setTrainCars((prev) =>
         prev.map((c, idx) => (idx === currentCarIndex ? { ...c, isFilled: true } : c))
       );
 
       const nextIdx = currentCarIndex + 1;
       setCurrentCarIndex(nextIdx);
-      setTrainScore(s => s + 10);
+      setTrainScore((s) => s + 10);
       if (onSuccessCount) onSuccessCount();
 
       if (nextIdx < trainCars.length) {
@@ -131,9 +133,7 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
   };
 
   const currentExpected =
-    currentCarIndex < trainCars.length
-      ? trainCars[currentCarIndex].expectedNum
-      : null;
+    currentCarIndex < trainCars.length ? trainCars[currentCarIndex].expectedNum : null;
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none">
@@ -146,9 +146,7 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
             </div>
             <div className="text-left">
               <div className="text-xs font-black text-slate-400">小火车货运站</div>
-              <div className="text-sm sm:text-base font-black text-slate-800">
-                {promptMessage}
-              </div>
+              <div className="text-sm sm:text-base font-black text-slate-800">{promptMessage}</div>
             </div>
           </div>
 
@@ -172,9 +170,7 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
         {/* Animated Moving Train Container */}
         <div
           className={`flex items-end gap-2 transition-all duration-1000 ${
-            isTrainDeparting
-              ? 'translate-x-[150vw] duration-[3500ms] ease-in'
-              : 'translate-x-0'
+            isTrainDeparting ? 'translate-x-[150vw] duration-[3500ms] ease-in' : 'translate-x-0'
           }`}
         >
           {/* Locomotive Engine (Front) */}
@@ -189,7 +185,7 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
             <div className="w-32 sm:w-36 h-28 bg-gradient-to-tr from-rose-500 to-red-600 rounded-3xl shadow-2xl border-4 border-yellow-300 relative flex flex-col justify-between p-2 text-white">
               {/* Chimney */}
               <div className="absolute -top-5 left-6 w-7 h-6 bg-red-700 rounded-t-lg border-2 border-yellow-300" />
-              
+
               {/* Driver window with smiling panda driver */}
               <div className="w-12 h-10 bg-sky-200 rounded-xl border-2 border-white self-end flex items-center justify-center text-2xl shadow-inner">
                 🐼
@@ -226,8 +222,8 @@ export const NumberTrainMode: React.FC<NumberTrainModeProps> = ({
                       car.isFilled
                         ? 'bg-gradient-to-b from-white to-slate-100 border-emerald-400 scale-105 shadow-emerald-200'
                         : isCurrent
-                        ? 'bg-amber-100/90 border-yellow-400 animate-pulse ring-4 ring-yellow-300'
-                        : 'bg-white/60 border-dashed border-slate-400 opacity-60'
+                          ? 'bg-amber-100/90 border-yellow-400 animate-pulse ring-4 ring-yellow-300'
+                          : 'bg-white/60 border-dashed border-slate-400 opacity-60'
                     }`}
                   >
                     {/* Car Index Badge */}

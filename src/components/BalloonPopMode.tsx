@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { LETTERS_DATA, NUMBERS_DATA } from '../data/gameData';
+import { pickUniqueDistractors } from '../utils/gameLogic';
 import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
-import { Volume2, Trophy, Flame, CheckCircle2, XCircle, Sparkles, Star } from 'lucide-react';
+import { Volume2, Trophy, Flame, CheckCircle2, XCircle, Sparkles } from 'lucide-react';
 
 interface BalloonItem {
   id: string;
@@ -43,7 +44,9 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
   const [streak, setStreak] = useState(0);
 
   // Status feedback: 'idle' | 'correct' | 'wrong' | 'next_round'
-  const [feedbackState, setFeedbackState] = useState<'idle' | 'correct' | 'wrong' | 'next_round'>('idle');
+  const [feedbackState, setFeedbackState] = useState<'idle' | 'correct' | 'wrong' | 'next_round'>(
+    'idle'
+  );
   const [feedbackMsg, setFeedbackMsg] = useState<string>('准备好了吗？开始打气球啦！🎈');
   const [lastWrongKey, setLastWrongKey] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
@@ -109,27 +112,25 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
       isTarget: true
     });
 
-    // 2. Distractor balloons
-    const letters = Object.keys(LETTERS_DATA);
-    for (let i = 0; i < 3; i++) {
-      const otherChar = letters[Math.floor(Math.random() * letters.length)];
-      if (otherChar !== targetSymbol) {
-        const item = LETTERS_DATA[otherChar].items[0];
-        newBalloons.push({
-          id: `distract-${i}-${Date.now()}`,
-          symbol: otherChar,
-          type: 'letter',
-          emoji: item.emoji,
-          nameCn: item.nameCn,
-          nameEn: item.name,
-          color: balloonColors[(i + 1) % balloonColors.length],
-          x: Math.random() * 70 + 15,
-          y: 90 + i * 8,
-          speed: Math.random() * 0.15 + 0.1,
-          isTarget: false
-        });
-      }
-    }
+    // 2. Distractor balloons - precisely 3 unique distractors
+    const allLetterKeys = Object.keys(LETTERS_DATA);
+    const distractorKeys = pickUniqueDistractors(allLetterKeys, targetSymbol, 3);
+    distractorKeys.forEach((otherChar, i) => {
+      const item = LETTERS_DATA[otherChar].items[0];
+      newBalloons.push({
+        id: `distract-${i}-${Date.now()}-${Math.random()}`,
+        symbol: otherChar,
+        type: 'letter',
+        emoji: item.emoji,
+        nameCn: item.nameCn,
+        nameEn: item.name,
+        color: balloonColors[(i + 1) % balloonColors.length],
+        x: Math.random() * 70 + 15,
+        y: 90 + i * 8,
+        speed: Math.random() * 0.15 + 0.1,
+        isTarget: false
+      });
+    });
 
     setBalloons(newBalloons);
     setFeedbackMsg(`寻找目标：【${targetSymbol}】${targetNameCn} ${targetEmoji}`);
@@ -156,8 +157,8 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     if (isTransitioning) return;
 
     const interval = setInterval(() => {
-      setBalloons(prev => {
-        return prev.map(b => {
+      setBalloons((prev) => {
+        return prev.map((b) => {
           let nextY = b.y - b.speed;
           if (nextY < 15) {
             nextY = 95; // loop back down
@@ -188,14 +189,12 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
       origin: { y: 0.5 }
     });
 
-    setScore(s => s + 10);
-    setStreak(st => st + 1);
+    setScore((s) => s + 10);
+    setStreak((st) => st + 1);
     if (onSuccessCount) onSuccessCount();
 
     // Trigger pop explosion animation on target balloon
-    setBalloons(prev =>
-      prev.map(b => (b.isTarget ? { ...b, isPopping: true } : b))
-    );
+    setBalloons((prev) => prev.map((b) => (b.isTarget ? { ...b, isPopping: true } : b)));
 
     // Well-paced deliberate transition:
     // Stage 1: 1100ms celebration for explosion + "太棒啦，答对啦！" audio
@@ -228,7 +227,9 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     wrongTimerRef.current = window.setTimeout(() => {
       setFeedbackState('idle');
       if (currentTarget) {
-        setFeedbackMsg(`寻找目标：【${currentTarget.symbol}】${currentTarget.nameCn} ${currentTarget.emoji}`);
+        setFeedbackMsg(
+          `寻找目标：【${currentTarget.symbol}】${currentTarget.nameCn} ${currentTarget.emoji}`
+        );
       }
     }, 1800);
   };
@@ -253,7 +254,12 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     if (currentTarget.type === 'number') {
       soundEngine.speakNumberFeedback(parseInt(currentTarget.symbol, 10));
     } else {
-      soundEngine.speakLetterFeedback(currentTarget.symbol, currentTarget.nameEn, currentTarget.nameCn, 0);
+      soundEngine.speakLetterFeedback(
+        currentTarget.symbol,
+        currentTarget.nameEn,
+        currentTarget.nameCn,
+        0
+      );
     }
   };
 
@@ -262,7 +268,6 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
       {/* Top Banner Info & Dynamic Feedback HUD */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 w-11/12 max-w-xl">
         <div className="flex items-center justify-between px-4 py-2.5 bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-yellow-300 shadow-xl gap-2">
-          
           {/* Target Display */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-black text-slate-500">目标:</span>
@@ -270,7 +275,9 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
               {currentTarget?.symbol}
             </div>
             <span className="text-2xl animate-bounce-soft">{currentTarget?.emoji}</span>
-            <span className="text-sm font-black text-slate-700 hidden sm:inline">{currentTarget?.nameCn}</span>
+            <span className="text-sm font-black text-slate-700 hidden sm:inline">
+              {currentTarget?.nameCn}
+            </span>
           </div>
 
           {/* Dynamic Interactive Feedback / Action Badge */}
@@ -329,10 +336,10 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
             feedbackState === 'correct'
               ? 'bg-emerald-600 text-white scale-110'
               : feedbackState === 'wrong'
-              ? 'bg-rose-600 text-white animate-wiggle'
-              : feedbackState === 'next_round'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-slate-900/65 text-white'
+                ? 'bg-rose-600 text-white animate-wiggle'
+                : feedbackState === 'next_round'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-900/65 text-white'
           }`}
         >
           {feedbackMsg}
@@ -344,9 +351,7 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30 animate-pop-in">
           <div className="bg-white/95 backdrop-blur-xl px-10 py-7 rounded-3xl border-4 border-yellow-300 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col items-center gap-3">
             <div className="text-6xl animate-wiggle">⭐</div>
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-800">
-              答对啦！真棒！
-            </h3>
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-800">答对啦！真棒！</h3>
             <div className="flex items-center gap-2 text-indigo-700 font-extrabold text-sm sm:text-base bg-indigo-50 px-5 py-2 rounded-2xl border border-indigo-200 shadow-inner">
               <Sparkles className="w-5 h-5 text-yellow-500 animate-spin" />
               <span>下一题马上飞来喽... 🎈</span>
@@ -357,20 +362,21 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
 
       {/* Balloon Canvas Playground Area */}
       <div className="relative w-full h-full">
-        {balloons.map(b => (
+        {balloons.map((b) => (
           <div
             key={b.id}
             onClick={() => {
-              if (isTransitioning) return;
-              if (currentTarget && b.symbol === currentTarget.symbol) {
+              soundEngine.unlockAudio();
+              if (isTransitioning || !currentTarget || b.isPopping) return;
+              if (b.symbol.toUpperCase() === currentTarget.symbol.toUpperCase()) {
                 handleCorrectHit(currentTarget.symbol);
-              } else if (currentTarget) {
+              } else {
                 handleWrongHit(b.symbol, currentTarget.symbol);
               }
             }}
             className={`absolute -translate-x-1/2 transition-transform cursor-pointer ${
               b.isPopping
-                ? 'animate-pop-out scale-150 opacity-0 pointer-events-none'
+                ? 'animate-pop-out pointer-events-none'
                 : 'hover:scale-110 active:scale-95'
             }`}
             style={{
@@ -393,9 +399,7 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
               <span className="text-3xl sm:text-4xl font-black drop-shadow-md tracking-wider">
                 {b.symbol}
               </span>
-              <span className="text-xl sm:text-2xl mt-0.5 filter drop-shadow">
-                {b.emoji}
-              </span>
+              <span className="text-xl sm:text-2xl mt-0.5 filter drop-shadow">{b.emoji}</span>
 
               {/* Knot at bottom */}
               <div

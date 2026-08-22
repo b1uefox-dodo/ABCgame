@@ -41,23 +41,29 @@ export interface SparkleParticle {
 export class PhysicsWorld {
   public entities: PhysicsEntity[] = [];
   public particles: SparkleParticle[] = [];
-  public width: number = window.innerWidth;
-  public height: number = window.innerHeight;
+  public width: number = typeof window !== 'undefined' ? window.innerWidth : 800;
+  public height: number = typeof window !== 'undefined' ? window.innerHeight : 600;
   public gravity: number = 0.45;
   public bounceDamping: number = 0.72;
   public isZeroGravity: boolean = false;
 
-  constructor() {
-    this.updateDimensions();
-    window.addEventListener('resize', () => this.updateDimensions());
+  constructor(
+    width: number = typeof window !== 'undefined' ? window.innerWidth : 800,
+    height: number = typeof window !== 'undefined' ? window.innerHeight : 600
+  ) {
+    this.updateDimensions(width, height);
   }
 
-  public updateDimensions() {
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+  public updateDimensions(width?: number, height?: number) {
+    this.width = width ?? (typeof window !== 'undefined' ? window.innerWidth : 800);
+    this.height = height ?? (typeof window !== 'undefined' ? window.innerHeight : 600);
   }
 
-  public addEntity(entity: Omit<PhysicsEntity, 'id' | 'createdAt' | 'bounceCount' | 'isDraggable' | 'vRot'> & { id?: string }): PhysicsEntity {
+  public addEntity(
+    entity: Omit<PhysicsEntity, 'id' | 'createdAt' | 'bounceCount' | 'isDraggable' | 'vRot'> & {
+      id?: string;
+    }
+  ): PhysicsEntity {
     // Limit total entities to 14 to keep canvas 100% fluid 60FPS
     if (this.entities.length >= 14) {
       this.entities.shift();
@@ -91,7 +97,7 @@ export class PhysicsWorld {
         color,
         size: Math.random() * 6 + 5,
         opacity: 1,
-        emoji: Math.random() > 0.6 ? (emoji || '✨') : undefined,
+        emoji: Math.random() > 0.6 ? emoji || '✨' : undefined,
         life: 0,
         maxLife: Math.random() * 25 + 25
       });
@@ -123,7 +129,7 @@ export class PhysicsWorld {
     }
 
     // Launch all active entities upward
-    this.entities.forEach(ent => {
+    this.entities.forEach((ent) => {
       ent.vy = -(Math.random() * 12 + 8);
       ent.vx = (Math.random() - 0.5) * 12;
       ent.vRot = (Math.random() - 0.5) * 8;
@@ -167,7 +173,7 @@ export class PhysicsWorld {
         e.vy += effectiveGravity;
         e.x += e.vx;
         e.y += e.vy;
-        
+
         // Auto-righting upright rotation
         e.rotation += e.vRot;
         e.vRot *= 0.9;

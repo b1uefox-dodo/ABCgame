@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LETTERS_DATA, NUMBERS_DATA } from '../data/gameData';
-import { Volume2, Sparkles, ChevronDown, ChevronUp, Shuffle } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, Shuffle } from 'lucide-react';
 
 interface VirtualKeyboardProps {
   activeKey: string | null;
@@ -45,10 +45,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
   };
 
   const isHighlighted = (key: string) => {
-    return (
-      activeKey?.toUpperCase() === key.toUpperCase() ||
-      (key === ' ' && activeKey === 'Space')
-    );
+    return activeKey?.toUpperCase() === key.toUpperCase() || (key === ' ' && activeKey === 'Space');
   };
 
   const isTarget = (key: string) => {
@@ -64,7 +61,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
             <Sparkles className="w-3.5 h-3.5" /> 萌趣键盘
           </span>
           <button
-            onClick={() => setLayoutMode(m => (m === 'qwerty' ? 'alphabetical' : 'qwerty'))}
+            onClick={() => setLayoutMode((m) => (m === 'qwerty' ? 'alphabetical' : 'qwerty'))}
             className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/80 hover:bg-white text-indigo-600 shadow-sm transition active:scale-95"
             title="切换按键排列方式"
           >
@@ -92,7 +89,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
         <div className="bg-slate-900/40 backdrop-blur-xl p-2.5 sm:p-3 rounded-b-3xl border-b border-x border-white/40 shadow-2xl flex flex-col gap-1.5 sm:gap-2">
           {/* Numbers Row */}
           <div className="flex justify-center gap-1 sm:gap-1.5">
-            {numberRow.map(numStr => {
+            {numberRow.map((numStr) => {
               const active = isHighlighted(numStr);
               const target = isTarget(numStr);
               const emoji = getKeyEmoji(numStr);
@@ -104,8 +101,8 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                     active
                       ? 'bg-amber-300 text-amber-950 scale-95 translate-y-1 shadow-[0_1px_0_rgba(0,0,0,0.2)]'
                       : target
-                      ? 'bg-amber-400 text-amber-950 animate-bounce ring-4 ring-yellow-300 shadow-amber-600'
-                      : 'bg-gradient-to-b from-amber-400 to-amber-500 text-white hover:brightness-105'
+                        ? 'bg-amber-400 text-amber-950 animate-bounce ring-4 ring-yellow-300 shadow-amber-600'
+                        : 'bg-gradient-to-b from-amber-400 to-amber-500 text-white hover:brightness-105'
                   }`}
                 >
                   <span className="text-xs leading-none">{emoji}</span>
@@ -131,7 +128,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
           {/* Letter Rows */}
           {currentLetterRows.map((row, rIdx) => (
             <div key={rIdx} className="flex justify-center gap-1 sm:gap-1.5">
-              {row.map(char => {
+              {row.map((char) => {
                 const active = isHighlighted(char);
                 const target = isTarget(char);
                 const emoji = getKeyEmoji(char);
@@ -148,12 +145,15 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                       active
                         ? 'text-slate-900 scale-95 translate-y-1 shadow-[0_1px_0_rgba(0,0,0,0.2)] ring-4 ring-yellow-400'
                         : target
-                        ? 'bg-emerald-400 text-emerald-950 animate-bounce ring-4 ring-emerald-300'
-                        : 'bg-gradient-to-b from-white to-slate-100 text-slate-800 hover:brightness-105'
+                          ? 'bg-emerald-400 text-emerald-950 animate-bounce ring-4 ring-emerald-300'
+                          : 'bg-gradient-to-b from-white to-slate-100 text-slate-800 hover:brightness-105'
                     }`}
                   >
                     <span className="text-[10px] sm:text-xs leading-none opacity-90">{emoji}</span>
-                    <span className="leading-tight drop-shadow-sm font-black" style={{ color: active ? '#000' : letterColor }}>
+                    <span
+                      className="leading-tight drop-shadow-sm font-black"
+                      style={{ color: active ? '#000' : letterColor }}
+                    >
                       {char}
                     </span>
                   </button>

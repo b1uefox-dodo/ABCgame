@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { soundEngine } from '../utils/soundEngine';
 import { KeyPress } from '../types';
 import confetti from 'canvas-confetti';
-import { Sparkles, Star, Volume2, HelpCircle } from 'lucide-react';
+import { Star, Volume2 } from 'lucide-react';
 
 interface WordPuzzle {
   word: string;
@@ -14,16 +14,86 @@ interface WordPuzzle {
 }
 
 const PUZZLES: WordPuzzle[] = [
-  { word: 'CAT', nameCn: '小猫', emoji: '🐱', missingIndex: 1, themeColor: '#F97316', soundType: 'meow' },
-  { word: 'DOG', nameCn: '小狗', emoji: '🐶', missingIndex: 2, themeColor: '#EAB308', soundType: 'boing' },
-  { word: 'SUN', nameCn: '太阳', emoji: '☀️', missingIndex: 1, themeColor: '#F59E0B', soundType: 'sparkle' },
-  { word: 'CAR', nameCn: '汽车', emoji: '🚗', missingIndex: 0, themeColor: '#EF4444', soundType: 'swoosh' },
-  { word: 'PIG', nameCn: '小猪', emoji: '🐷', missingIndex: 1, themeColor: '#EC4899', soundType: 'boing' },
-  { word: 'FOX', nameCn: '狐狸', emoji: '🦊', missingIndex: 2, themeColor: '#EA580C', soundType: 'sparkle' },
-  { word: 'BEE', nameCn: '蜜蜂', emoji: '🐝', missingIndex: 1, themeColor: '#FACC15', soundType: 'sparkle' },
-  { word: 'BUS', nameCn: '巴士', emoji: '🚌', missingIndex: 1, themeColor: '#3B82F6', soundType: 'swoosh' },
-  { word: 'EGG', nameCn: '鸡蛋', emoji: '🥚', missingIndex: 0, themeColor: '#F59E0B', soundType: 'boing' },
-  { word: 'ICE', nameCn: '冰块', emoji: '🧊', missingIndex: 1, themeColor: '#38BDF8', soundType: 'sparkle' }
+  {
+    word: 'CAT',
+    nameCn: '小猫',
+    emoji: '🐱',
+    missingIndex: 1,
+    themeColor: '#F97316',
+    soundType: 'meow'
+  },
+  {
+    word: 'DOG',
+    nameCn: '小狗',
+    emoji: '🐶',
+    missingIndex: 2,
+    themeColor: '#EAB308',
+    soundType: 'boing'
+  },
+  {
+    word: 'SUN',
+    nameCn: '太阳',
+    emoji: '☀️',
+    missingIndex: 1,
+    themeColor: '#F59E0B',
+    soundType: 'sparkle'
+  },
+  {
+    word: 'CAR',
+    nameCn: '汽车',
+    emoji: '🚗',
+    missingIndex: 0,
+    themeColor: '#EF4444',
+    soundType: 'swoosh'
+  },
+  {
+    word: 'PIG',
+    nameCn: '小猪',
+    emoji: '🐷',
+    missingIndex: 1,
+    themeColor: '#EC4899',
+    soundType: 'boing'
+  },
+  {
+    word: 'FOX',
+    nameCn: '狐狸',
+    emoji: '🦊',
+    missingIndex: 2,
+    themeColor: '#EA580C',
+    soundType: 'sparkle'
+  },
+  {
+    word: 'BEE',
+    nameCn: '蜜蜂',
+    emoji: '🐝',
+    missingIndex: 1,
+    themeColor: '#FACC15',
+    soundType: 'sparkle'
+  },
+  {
+    word: 'BUS',
+    nameCn: '巴士',
+    emoji: '🚌',
+    missingIndex: 1,
+    themeColor: '#3B82F6',
+    soundType: 'swoosh'
+  },
+  {
+    word: 'EGG',
+    nameCn: '鸡蛋',
+    emoji: '🥚',
+    missingIndex: 0,
+    themeColor: '#F59E0B',
+    soundType: 'boing'
+  },
+  {
+    word: 'ICE',
+    nameCn: '冰块',
+    emoji: '🧊',
+    missingIndex: 1,
+    themeColor: '#38BDF8',
+    soundType: 'sparkle'
+  }
 ];
 
 interface WordBuilderModeProps {
@@ -70,11 +140,11 @@ export const WordBuilderMode: React.FC<WordBuilderModeProps> = ({
         origin: { y: 0.55 }
       });
 
-      setScore(s => s + 10);
+      setScore((s) => s + 10);
       if (onSuccessCount) onSuccessCount();
 
       setTimeout(() => {
-        setPuzzleIndex(p => p + 1);
+        setPuzzleIndex((p) => p + 1);
       }, 2500);
     } else if (pressed.length === 1 && pressed >= 'A' && pressed <= 'Z') {
       soundEngine.playBoing();
@@ -94,9 +164,7 @@ export const WordBuilderMode: React.FC<WordBuilderModeProps> = ({
         <div className="flex items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-xl rounded-3xl border-4 border-pink-300 shadow-xl">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🧩</span>
-            <span className="text-sm sm:text-base font-black text-slate-800">
-              魔法单词拼图
-            </span>
+            <span className="text-sm sm:text-base font-black text-slate-800">魔法单词拼图</span>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -129,9 +197,7 @@ export const WordBuilderMode: React.FC<WordBuilderModeProps> = ({
         </div>
 
         {/* Chinese Name */}
-        <div className="text-lg sm:text-xl font-black text-slate-700">
-          {currentPuzzle.nameCn}
-        </div>
+        <div className="text-lg sm:text-xl font-black text-slate-700">{currentPuzzle.nameCn}</div>
 
         {/* Word Tiles with Missing Blank */}
         <div className="flex items-center justify-center gap-2 sm:gap-3 my-2">

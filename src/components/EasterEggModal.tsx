@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { EasterEggWord } from '../data/gameData';
 import { soundEngine } from '../utils/soundEngine';
-import { Sparkles, Star, PartyPopper } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface EasterEggModalProps {
   egg: EasterEggWord | null;
@@ -68,12 +68,17 @@ export const EasterEggModal: React.FC<EasterEggModalProps> = ({ egg, onClose }) 
 
       {/* Main Celebration Card */}
       <div
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
         className="relative max-w-lg w-11/12 p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-white/95 to-white/90 border-4 border-yellow-300 shadow-[0_20px_50px_rgba(0,0,0,0.5)] text-center flex flex-col items-center gap-4 animate-bounce-soft"
       >
         {/* Floating Stars */}
         <div className="absolute -top-6 -left-6 text-4xl animate-wiggle">⭐</div>
-        <div className="absolute -top-6 -right-6 text-4xl animate-wiggle" style={{ animationDelay: '0.2s' }}>✨</div>
+        <div
+          className="absolute -top-6 -right-6 text-4xl animate-wiggle"
+          style={{ animationDelay: '0.2s' }}
+        >
+          ✨
+        </div>
         <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex gap-2">
           <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-pink-500 text-white font-extrabold text-xs shadow-lg flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5" /> 发现隐藏拼词彩蛋！
@@ -100,9 +105,7 @@ export const EasterEggModal: React.FC<EasterEggModalProps> = ({ egg, onClose }) 
           <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-wide">
             {egg.title}
           </h2>
-          <p className="text-sm sm:text-base font-bold text-slate-600">
-            {egg.desc}
-          </p>
+          <p className="text-sm sm:text-base font-bold text-slate-600">{egg.desc}</p>
         </div>
 
         {/* Close hint button */}

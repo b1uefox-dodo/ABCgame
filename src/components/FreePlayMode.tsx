@@ -1,27 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PhysicsWorld, PhysicsEntity, SparkleParticle } from '../utils/physics';
+import { PhysicsWorld, PhysicsEntity } from '../utils/physics';
 import { LETTERS_DATA, NUMBERS_DATA, WorldTheme } from '../data/gameData';
+import { findMatchingEasterEgg } from '../utils/gameLogic';
 import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
 import { MascotPet } from './MascotPet';
-import { Sparkles, Gift, Trash2, Volume2, Move } from 'lucide-react';
-
-function shadeColor(color: string, percent: number): string {
-  if (!color || !color.startsWith('#') || color.length < 7) return color || '#3B82F6';
-  let R = parseInt(color.substring(1, 3), 16);
-  let G = parseInt(color.substring(3, 5), 16);
-  let B = parseInt(color.substring(5, 7), 16);
-
-  R = Math.min(255, Math.max(0, Math.floor((R * (100 + percent)) / 100)));
-  G = Math.min(255, Math.max(0, Math.floor((G * (100 + percent)) / 100)));
-  B = Math.min(255, Math.max(0, Math.floor((B * (100 + percent)) / 100)));
-
-  const RR = R.toString(16).padStart(2, '0');
-  const GG = G.toString(16).padStart(2, '0');
-  const BB = B.toString(16).padStart(2, '0');
-
-  return `#${RR}${GG}${BB}`;
-}
+import { Volume2, Move } from 'lucide-react';
 
 interface FreePlayModeProps {
   currentTheme: WorldTheme;
@@ -57,7 +41,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
   } | null>(null);
 
   const [isVacuumActive, setIsVacuumActive] = useState(false);
-  const [letterPressCounters, setLetterPressCounters] = useState<Record<string, number>>({});
+  const letterPressCountersRef = useRef<Record<string, number>>({});
   const typedWordBufferRef = useRef<string>('');
   const lastKeyTimeRef = useRef<number>(0);
 
@@ -101,14 +85,11 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
     // --- Letter Keys (A-Z) ---
     if (LETTERS_DATA[upperKey]) {
       const letterData = LETTERS_DATA[upperKey];
-      const count = letterPressCounters[upperKey] || 0;
+      const count = letterPressCountersRef.current[upperKey] || 0;
       const itemIndex = count % letterData.items.length;
       const currentItem = letterData.items[itemIndex];
 
-      setLetterPressCounters(prev => ({
-        ...prev,
-        [upperKey]: count + 1
-      }));
+      letterPressCountersRef.current[upperKey] = count + 1;
 
       // Spawn entity in physics world
       const spawnX = Math.random() * (world.width - 240) + 120;
@@ -190,7 +171,12 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
 
       // Sound & Note
       soundEngine.playNote(numData.freq);
-      soundEngine.speakNumberFeedback(num, numData.name, numData.nameCn, `${num} ${numData.countItem.nameCn}`);
+      soundEngine.speakNumberFeedback(
+        num,
+        numData.name,
+        numData.nameCn,
+        `${num} ${numData.countItem.nameCn}`
+      );
 
       setHeroCard({
         symbol: `${num}`,
@@ -207,15 +193,10 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
 
   // Check easter eggs from typed word stream
   const checkEasterEgg = (buffer: string) => {
-    const eggs = [
-      'CAT', 'DOG', 'SUN', 'STAR', 'CAR', 'BUS', 'FLY', 'PIG', 'FOX', 'FISH', 'LOVE', 'RAIN', 'ICE', 'BEE'
-    ];
-    for (const egg of eggs) {
-      if (buffer.endsWith(egg)) {
-        typedWordBufferRef.current = '';
-        onEggTriggered(egg);
-        break;
-      }
+    const matched = findMatchingEasterEgg(buffer);
+    if (matched) {
+      typedWordBufferRef.current = '';
+      onEggTriggered(matched.word);
     }
   };
 
@@ -241,10 +222,15 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
   const openGiftBox = () => {
     if (!activeGiftBox) return;
     soundEngine.playFanfare();
-    setActiveGiftBox(prev => prev ? { ...prev, isOpen: true } : null);
+    setActiveGiftBox((prev) => (prev ? { ...prev, isOpen: true } : null));
 
     const world = physicsWorldRef.current;
-    world.createSpawnExplosion(world.width / 2, world.height / 2, '#F59E0B', activeGiftBox.rewardEmoji);
+    world.createSpawnExplosion(
+      world.width / 2,
+      world.height / 2,
+      '#F59E0B',
+      activeGiftBox.rewardEmoji
+    );
 
     // Spawn super reward
     world.addEntity({
@@ -306,7 +292,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // 1. Draw Sparkle Particles
-      world.particles.forEach(p => {
+      world.particles.forEach((p) => {
         ctx.save();
         ctx.globalAlpha = Math.max(0, p.opacity);
         if (p.emoji) {
@@ -324,7 +310,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
       });
 
       // 2. Draw Physics Entities (Pure Crisp Circular 3D Toy Badges - Zero Fog / 100% Vibrant)
-      world.entities.forEach(ent => {
+      world.entities.forEach((ent) => {
         ctx.save();
         ctx.translate(ent.x, ent.y);
 
@@ -363,7 +349,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
         const badgeR = 13;
         const badgeX = r * 0.65;
         const badgeY = -r * 0.65;
-        
+
         ctx.fillStyle = baseColor;
         ctx.beginPath();
         ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
@@ -481,13 +467,9 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
             >
               {heroCard.symbol}
             </span>
-            <span className="text-5xl sm:text-6xl animate-bounce-soft">
-              {heroCard.emoji}
-            </span>
+            <span className="text-5xl sm:text-6xl animate-bounce-soft">{heroCard.emoji}</span>
             <div className="flex flex-col text-left">
-              <span className="text-lg sm:text-xl font-black text-slate-800">
-                {heroCard.title}
-              </span>
+              <span className="text-lg sm:text-xl font-black text-slate-800">{heroCard.title}</span>
               <span className="text-xs sm:text-sm font-extrabold text-indigo-600">
                 {heroCard.funFact || heroCard.subtitle}
               </span>
@@ -518,9 +500,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
       {activeGiftBox && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm pointer-events-auto">
           <div className="relative p-8 bg-white/95 rounded-3xl border-4 border-purple-400 shadow-2xl text-center flex flex-col items-center gap-4 animate-bounce-soft">
-            <h3 className="text-2xl font-black text-purple-700">
-              🎁 神秘惊喜礼物盒！
-            </h3>
+            <h3 className="text-2xl font-black text-purple-700">🎁 神秘惊喜礼物盒！</h3>
             {!activeGiftBox.isOpen ? (
               <div
                 onClick={openGiftBox}
@@ -530,15 +510,11 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
                   <div className="absolute -inset-4 bg-purple-300 rounded-full blur-xl opacity-60 group-hover:opacity-100" />
                   <span className="relative">🎁</span>
                 </div>
-                <p className="text-sm font-black text-slate-600 mt-2">
-                  点击礼物盒开箱！✨
-                </p>
+                <p className="text-sm font-black text-slate-600 mt-2">点击礼物盒开箱！✨</p>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2 animate-pop-in">
-                <span className="text-8xl animate-spin-slow">
-                  {activeGiftBox.rewardEmoji}
-                </span>
+                <span className="text-8xl animate-spin-slow">{activeGiftBox.rewardEmoji}</span>
                 <span className="text-xl font-black text-purple-900">
                   {activeGiftBox.rewardTitle}
                 </span>
@@ -551,9 +527,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
       {/* Vacuum Monster Visual Animation */}
       {isVacuumActive && (
         <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
-          <div className="text-9xl animate-spin-slow filter drop-shadow-2xl">
-            🌪️
-          </div>
+          <div className="text-9xl animate-spin-slow filter drop-shadow-2xl">🌪️</div>
           <div className="absolute bottom-20 text-3xl font-black text-white px-6 py-2 rounded-full bg-rose-500 shadow-2xl animate-bounce">
             咕噜咕噜~ 怪物吸尘器出动！✨
           </div>

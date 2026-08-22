@@ -1,18 +1,7 @@
 import React, { useState } from 'react';
 import { WORLD_THEMES, WorldTheme } from '../data/gameData';
 import { soundEngine } from '../utils/soundEngine';
-import {
-  Volume2,
-  VolumeX,
-  Music,
-  BookOpen,
-  Maximize,
-  Minimize,
-  Sparkles,
-  Globe,
-  Palette,
-  LogOut
-} from 'lucide-react';
+import { Volume2, VolumeX, Music, BookOpen, Maximize, Minimize, Globe, LogOut } from 'lucide-react';
 
 export type GameMode = 'free' | 'balloon' | 'train' | 'word' | 'piano';
 
@@ -37,7 +26,9 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 }) => {
   const [isMuted, setIsMuted] = useState(soundEngine.getMuted());
   const [isBgm, setIsBgm] = useState(soundEngine.isBgmActive());
-  const [voiceLang, setVoiceLang] = useState<'bilingual' | 'en' | 'zh'>(soundEngine.getVoiceLanguage());
+  const [voiceLang, setVoiceLang] = useState<'bilingual' | 'en' | 'zh'>(
+    soundEngine.getVoiceLanguage()
+  );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
 
@@ -103,7 +94,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
         {/* Center: 5 Game Modes Tabs */}
         <div className="flex items-center gap-1 sm:gap-1.5 bg-slate-900/10 p-1 rounded-2xl backdrop-blur-sm overflow-x-auto max-w-full">
-          {modes.map(m => {
+          {modes.map((m) => {
             const active = currentMode === m.id;
             return (
               <button
@@ -164,7 +155,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                 className="absolute top-12 right-0 w-44 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-amber-300 p-1.5 flex flex-col gap-1 z-50 animate-pop-in"
               >
                 <div className="text-[10px] font-black text-slate-400 px-2 py-1">选择探索世界</div>
-                {WORLD_THEMES.map(theme => (
+                {WORLD_THEMES.map((theme) => (
                   <button
                     key={theme.id}
                     onClick={() => {
@@ -193,9 +184,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             title="切换语音发音：双语 / 英文 / 中文"
           >
             <Globe className="w-3.5 h-3.5 text-blue-500" />
-            <span>
-              {voiceLang === 'bilingual' ? '双语' : voiceLang === 'en' ? 'EN' : '中文'}
-            </span>
+            <span>{voiceLang === 'bilingual' ? '双语' : voiceLang === 'en' ? 'EN' : '中文'}</span>
           </button>
 
           {/* BGM Melody Toggle */}

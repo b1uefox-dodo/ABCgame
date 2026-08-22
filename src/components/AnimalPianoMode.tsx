@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { PIANO_INSTRUMENTS, NUMBERS_DATA } from '../data/gameData';
+import { PIANO_INSTRUMENTS } from '../data/gameData';
 import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
-import { Music, Sparkles, Volume2, BookOpen } from 'lucide-react';
+import { Music } from 'lucide-react';
 
 interface PianoKey {
   num: number;
@@ -18,15 +18,19 @@ const PIANO_KEYS: PianoKey[] = [
   { num: 2, note: 'D4', solfege: 'Re 来', freq: 293.66, color: '#F97316', heightClass: 'h-44' },
   { num: 3, note: 'E4', solfege: 'Mi 咪', freq: 329.63, color: '#EAB308', heightClass: 'h-40' },
   { num: 4, note: 'F4', solfege: 'Fa 发', freq: 349.23, color: '#10B981', heightClass: 'h-36' },
-  { num: 5, note: 'G4', solfege: 'Sol 索', freq: 392.00, color: '#06B6D4', heightClass: 'h-32' },
-  { num: 6, note: 'A4', solfege: 'La 拉', freq: 440.00, color: '#3B82F6', heightClass: 'h-28' },
+  { num: 5, note: 'G4', solfege: 'Sol 索', freq: 392.0, color: '#06B6D4', heightClass: 'h-32' },
+  { num: 6, note: 'A4', solfege: 'La 拉', freq: 440.0, color: '#3B82F6', heightClass: 'h-28' },
   { num: 7, note: 'B4', solfege: 'Ti 西', freq: 493.88, color: '#8B5CF6', heightClass: 'h-24' },
   { num: 8, note: 'C5', solfege: '高音Do', freq: 523.25, color: '#EC4899', heightClass: 'h-20' }
 ];
 
 const SONG_GUIDES = [
   { title: '⭐ 小星星', notes: ['1', '1', '5', '5', '6', '6', '5'], lyric: '一闪一闪亮晶晶' },
-  { title: '🐯 两只老虎', notes: ['1', '2', '3', '1', '1', '2', '3', '1'], lyric: '两只老虎跑得快' },
+  {
+    title: '🐯 两只老虎',
+    notes: ['1', '2', '3', '1', '1', '2', '3', '1'],
+    lyric: '两只老虎跑得快'
+  },
   { title: '🔔 新年好', notes: ['1', '1', '1', '5', '3', '3', '3', '1'], lyric: '新年好呀新年好呀' }
 ];
 
@@ -72,7 +76,7 @@ export const AnimalPianoMode: React.FC<AnimalPianoModeProps> = ({ latestKeyPress
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            {PIANO_INSTRUMENTS.map(inst => (
+            {PIANO_INSTRUMENTS.map((inst) => (
               <button
                 key={inst.id}
                 onClick={() => {
@@ -99,14 +103,16 @@ export const AnimalPianoMode: React.FC<AnimalPianoModeProps> = ({ latestKeyPress
           <span className="text-sm font-black text-slate-800">{currentSong.title}</span>
           <div className="flex gap-1 bg-amber-100 px-2 py-0.5 rounded-lg text-xs font-mono font-bold text-amber-900">
             {currentSong.notes.map((n, i) => (
-              <span key={i} className="px-0.5">{n}</span>
+              <span key={i} className="px-0.5">
+                {n}
+              </span>
             ))}
           </div>
         </div>
         <button
           onClick={() => {
             soundEngine.playPop();
-            setActiveSongIndex(idx => (idx + 1) % SONG_GUIDES.length);
+            setActiveSongIndex((idx) => (idx + 1) % SONG_GUIDES.length);
           }}
           className="text-xs font-bold text-indigo-600 hover:underline"
         >
@@ -116,7 +122,7 @@ export const AnimalPianoMode: React.FC<AnimalPianoModeProps> = ({ latestKeyPress
 
       {/* Xylophone / Piano Keys Visualization */}
       <div className="z-10 w-full max-w-3xl px-4 flex justify-center items-end gap-1.5 sm:gap-3">
-        {PIANO_KEYS.map(pk => {
+        {PIANO_KEYS.map((pk) => {
           const isActive = activeNoteKey === pk.num;
 
           return (
@@ -134,9 +140,7 @@ export const AnimalPianoMode: React.FC<AnimalPianoModeProps> = ({ latestKeyPress
               }`}
             >
               {/* Note Solfege Top */}
-              <span className="text-xs sm:text-sm font-extrabold opacity-95">
-                {pk.solfege}
-              </span>
+              <span className="text-xs sm:text-sm font-extrabold opacity-95">{pk.solfege}</span>
 
               {/* Dancing Note Emoji */}
               <span className="text-2xl sm:text-3xl animate-bounce-soft">

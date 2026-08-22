@@ -22,7 +22,9 @@ class SoundEngine {
 
   private initCtx() {
     if (!this.ctx) {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioContextClass) {
         this.ctx = new AudioContextClass();
       }
@@ -81,7 +83,7 @@ class SoundEngine {
       this.currentAudio = audio;
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(err => {
+        playPromise.catch((err) => {
           console.warn('Audio play failed for', url, err);
         });
       }
@@ -90,7 +92,12 @@ class SoundEngine {
     }
   }
 
-  public speakLetterFeedback(letter: string, itemName?: string, itemNameCn?: string, itemIndex: number = 0) {
+  public speakLetterFeedback(
+    letter: string,
+    itemName?: string,
+    itemNameCn?: string,
+    itemIndex: number = 0
+  ) {
     if (this.isMuted) return;
     const upper = letter.toUpperCase();
     const lang = this.voiceLanguage || 'bilingual';
@@ -98,7 +105,7 @@ class SoundEngine {
     this.playVoiceFile(urlWithIndex);
   }
 
-  public speakNumberFeedback(num: number, nameEn?: string, nameCn?: string, countStr?: string) {
+  public speakNumberFeedback(num: number, _nameEn?: string, _nameCn?: string, _countStr?: string) {
     if (this.isMuted) return;
     const lang = this.voiceLanguage || 'bilingual';
     this.playVoiceFile(`/audio/numbers/${lang}/${num}.m4a`);
@@ -267,16 +274,16 @@ class SoundEngine {
     if (!this.ctx) return;
 
     const chords = [
-      { notes: [261.63, 329.63, 392.00], time: 0, dur: 0.15 },
-      { notes: [261.63, 329.63, 392.00], time: 140, dur: 0.15 },
-      { notes: [261.63, 329.63, 392.00], time: 280, dur: 0.15 },
-      { notes: [329.63, 392.00, 523.25], time: 440, dur: 0.6 }
+      { notes: [261.63, 329.63, 392.0], time: 0, dur: 0.15 },
+      { notes: [261.63, 329.63, 392.0], time: 140, dur: 0.15 },
+      { notes: [261.63, 329.63, 392.0], time: 280, dur: 0.15 },
+      { notes: [329.63, 392.0, 523.25], time: 440, dur: 0.6 }
     ];
 
     chords.forEach(({ notes, time, dur }) => {
       setTimeout(() => {
         if (!this.ctx || this.isMuted) return;
-        notes.forEach(freq => {
+        notes.forEach((freq) => {
           const osc = this.ctx!.createOscillator();
           const gain = this.ctx!.createGain();
           const now = this.ctx!.currentTime;
@@ -468,16 +475,36 @@ class SoundEngine {
 
   public playSoundByType(type: string, freq?: number) {
     switch (type) {
-      case 'pop': this.playPop(); break;
-      case 'boing': this.playBoing(); break;
-      case 'sparkle': this.playSparkle(); break;
-      case 'magic': this.playMagic(); break;
-      case 'swoosh': this.playSwoosh(); break;
-      case 'meow': this.playMeow(); break;
-      case 'quack': this.playQuack(); break;
-      case 'roar': this.playRoar(); break;
-      case 'chime': this.playSparkle(); break;
-      case 'trumpet': this.playFanfare(); break;
+      case 'pop':
+        this.playPop();
+        break;
+      case 'boing':
+        this.playBoing();
+        break;
+      case 'sparkle':
+        this.playSparkle();
+        break;
+      case 'magic':
+        this.playMagic();
+        break;
+      case 'swoosh':
+        this.playSwoosh();
+        break;
+      case 'meow':
+        this.playMeow();
+        break;
+      case 'quack':
+        this.playQuack();
+        break;
+      case 'roar':
+        this.playRoar();
+        break;
+      case 'chime':
+        this.playSparkle();
+        break;
+      case 'trumpet':
+        this.playFanfare();
+        break;
       default:
         if (freq) {
           this.playNote(freq);
@@ -508,7 +535,7 @@ class SoundEngine {
     this.initCtx();
     this.isBgmPlaying = true;
 
-    const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+    const pentatonicScale = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25];
     let noteIndex = 0;
 
     const playMelodyNote = () => {

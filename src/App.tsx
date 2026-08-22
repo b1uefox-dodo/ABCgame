@@ -75,16 +75,16 @@ export const App: React.FC = () => {
 
   const handleKeyDiscovered = useCallback((type: 'letter' | 'number', val: string | number) => {
     if (type === 'letter') {
-      setDiscoveredLetters(prev => new Set(prev).add(val as string));
+      setDiscoveredLetters((prev) => new Set(prev).add(val as string));
     } else {
-      setDiscoveredNumbers(prev => new Set(prev).add(val as number));
+      setDiscoveredNumbers((prev) => new Set(prev).add(val as number));
     }
   }, []);
 
   const handleEggTriggered = useCallback((word: string) => {
-    const eggObj = EASTER_EGG_WORDS.find(e => e.word.toUpperCase() === word.toUpperCase());
+    const eggObj = EASTER_EGG_WORDS.find((e) => e.word.toUpperCase() === word.toUpperCase());
     if (eggObj) {
-      setDiscoveredEggs(prev => new Set(prev).add(eggObj.word));
+      setDiscoveredEggs((prev) => new Set(prev).add(eggObj.word));
       setActiveEasterEgg(eggObj);
     }
   }, []);
@@ -121,7 +121,18 @@ export const App: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       soundEngine.unlockAudio();
       // Prevent browser default scroll for game keys
-      if (['Space', ' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Backspace'].includes(e.key)) {
+      if (
+        [
+          'Space',
+          ' ',
+          'ArrowUp',
+          'ArrowDown',
+          'ArrowLeft',
+          'ArrowRight',
+          'Tab',
+          'Backspace'
+        ].includes(e.key)
+      ) {
         e.preventDefault();
       }
 
@@ -131,7 +142,7 @@ export const App: React.FC = () => {
       // Quick Theme Cycle on CapsLock or Tab
       if (e.key === 'Tab' || e.key === 'CapsLock') {
         e.preventDefault();
-        const currentIdx = WORLD_THEMES.findIndex(t => t.id === currentTheme.id);
+        const currentIdx = WORLD_THEMES.findIndex((t) => t.id === currentTheme.id);
         const nextTheme = WORLD_THEMES[(currentIdx + 1) % WORLD_THEMES.length];
         setCurrentTheme(nextTheme);
         soundEngine.playMagic();
@@ -151,7 +162,9 @@ export const App: React.FC = () => {
   const totalDiscovered = discoveredLetters.size + discoveredNumbers.size + discoveredEggs.size;
 
   return (
-    <div className={`relative w-screen h-screen overflow-hidden bg-gradient-to-br ${currentTheme.bgGradient} select-none font-bubble`}>
+    <div
+      className={`relative w-screen h-screen overflow-hidden bg-gradient-to-br ${currentTheme.bgGradient} select-none font-bubble`}
+    >
       {/* Dynamic Thematic Ambient Floating Background Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
         {currentTheme.ambientEmoji.map((emoji, idx) => (
@@ -173,7 +186,7 @@ export const App: React.FC = () => {
       {/* Top Header Navigation Bar */}
       <HeaderNav
         currentMode={currentMode}
-        onModeChange={m => {
+        onModeChange={(m) => {
           setCurrentMode(m);
           setTargetKeyHint(null);
         }}
@@ -220,9 +233,7 @@ export const App: React.FC = () => {
           />
         )}
 
-        {currentMode === 'piano' && (
-          <AnimalPianoMode latestKeyPress={latestKeyPress} />
-        )}
+        {currentMode === 'piano' && <AnimalPianoMode latestKeyPress={latestKeyPress} />}
       </main>
 
       {/* Bottom Virtual Keyboard (Real-time synchronization & touch/click support) */}
@@ -236,10 +247,7 @@ export const App: React.FC = () => {
 
       {/* Full-Screen Easter Egg Magic Show Modal */}
       {activeEasterEgg && (
-        <EasterEggModal
-          egg={activeEasterEgg}
-          onClose={() => setActiveEasterEgg(null)}
-        />
+        <EasterEggModal egg={activeEasterEgg} onClose={() => setActiveEasterEgg(null)} />
       )}
 
       {/* Sticker Explorer Badge Album Modal */}
@@ -262,10 +270,7 @@ export const App: React.FC = () => {
       )}
 
       {/* Exit Game Confirmation Modal */}
-      <ExitConfirmModal
-        isOpen={isExitModalOpen}
-        onClose={() => setIsExitModalOpen(false)}
-      />
+      <ExitConfirmModal isOpen={isExitModalOpen} onClose={() => setIsExitModalOpen(false)} />
     </div>
   );
 };
