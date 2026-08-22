@@ -3,7 +3,7 @@ import confetti from 'canvas-confetti';
 import { LETTERS_DATA, NUMBERS_DATA } from '../data/gameData';
 import { KeyPress } from '../types';
 import { soundEngine } from '../utils/soundEngine';
-import { Volume2, Trophy, Flame, CheckCircle2, XCircle, Sparkles, HelpCircle } from 'lucide-react';
+import { Volume2, Trophy, Flame, CheckCircle2, XCircle, Sparkles, Star } from 'lucide-react';
 
 interface BalloonItem {
   id: string;
@@ -170,13 +170,13 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
     return () => clearInterval(interval);
   }, [isTransitioning]);
 
-  // Handle Correct Pop
+  // Handle Correct Pop with clear, child-friendly transition interval
   const handleCorrectHit = (target: string) => {
     if (isTransitioning || !currentTarget) return;
 
     setIsTransitioning(true);
     setFeedbackState('correct');
-    setFeedbackMsg(`🎉 答对啦！击破【${target}】！`);
+    setFeedbackMsg(`🎉 答对啦！成功击破【${target}】！`);
 
     soundEngine.playPop();
     soundEngine.playSparkle();
@@ -197,19 +197,19 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
       prev.map(b => (b.isTarget ? { ...b, isPopping: true } : b))
     );
 
-    // Transition pacing:
-    // 1. Let explosion and success sound play (600ms)
-    // 2. Show brief "下一题准备中..." intermission (600ms)
-    // Total clear delay before next question ~1200ms with distinct 600ms gap
+    // Well-paced deliberate transition:
+    // Stage 1: 1100ms celebration for explosion + "太棒啦，答对啦！" audio
+    // Stage 2: 1500ms calm intermission screen with star animation
+    // Total clear deliberate pause: ~2.6 seconds
     transitionTimerRef.current = window.setTimeout(() => {
       setFeedbackState('next_round');
-      setFeedbackMsg('✨ 太棒啦！下一题准备中... 🎈');
-      setBalloons([]); // Clear old round balloons for fresh calm moment
+      setFeedbackMsg('✨ 太棒啦！下一题马上来... 🎈');
+      setBalloons([]); // Clear screen for clean intermission
 
       transitionTimerRef.current = window.setTimeout(() => {
         startNewTarget();
-      }, 650);
-    }, 600);
+      }, 1500);
+    }, 1100);
   };
 
   // Handle Incorrect Press
@@ -276,7 +276,7 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
           {/* Dynamic Interactive Feedback / Action Badge */}
           <div className="flex-1 flex justify-center">
             {feedbackState === 'correct' && (
-              <div className="px-3 py-1.5 rounded-2xl bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-md animate-bounce flex items-center gap-1.5 ring-2 ring-emerald-300">
+              <div className="px-3.5 py-1.5 rounded-2xl bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-lg animate-bounce flex items-center gap-1.5 ring-4 ring-emerald-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-100" />
                 <span>答对啦！太棒了 🎉</span>
               </div>
@@ -285,14 +285,14 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
             {feedbackState === 'wrong' && (
               <div className="px-3 py-1.5 rounded-2xl bg-rose-500 text-white font-black text-xs sm:text-sm shadow-md animate-wiggle flex items-center gap-1.5 ring-2 ring-rose-300">
                 <XCircle className="w-4 h-4 text-rose-100" />
-                <span>按了【{lastWrongKey}】❌ 再试试！</span>
+                <span>不对哦！按了【{lastWrongKey}】</span>
               </div>
             )}
 
             {feedbackState === 'next_round' && (
-              <div className="px-3 py-1.5 rounded-2xl bg-indigo-500 text-white font-black text-xs sm:text-sm shadow-md animate-pulse flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-yellow-300 animate-spin-slow" />
-                <span>下一题准备中... 🎈</span>
+              <div className="px-3.5 py-1.5 rounded-2xl bg-indigo-600 text-white font-black text-xs sm:text-sm shadow-lg animate-pulse flex items-center gap-1.5 ring-4 ring-indigo-200">
+                <Sparkles className="w-4 h-4 text-yellow-300 animate-spin" />
+                <span>下一题马上来... 🎈</span>
               </div>
             )}
 
@@ -338,6 +338,22 @@ export const BalloonPopMode: React.FC<BalloonPopModeProps> = ({
           {feedbackMsg}
         </span>
       </div>
+
+      {/* Intermission Center Visual Card (Clear Calm Interval) */}
+      {feedbackState === 'next_round' && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30 animate-pop-in">
+          <div className="bg-white/95 backdrop-blur-xl px-10 py-7 rounded-3xl border-4 border-yellow-300 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col items-center gap-3">
+            <div className="text-6xl animate-wiggle">⭐</div>
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-800">
+              答对啦！真棒！
+            </h3>
+            <div className="flex items-center gap-2 text-indigo-700 font-extrabold text-sm sm:text-base bg-indigo-50 px-5 py-2 rounded-2xl border border-indigo-200 shadow-inner">
+              <Sparkles className="w-5 h-5 text-yellow-500 animate-spin" />
+              <span>下一题马上飞来喽... 🎈</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Balloon Canvas Playground Area */}
       <div className="relative w-full h-full">
