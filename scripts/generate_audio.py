@@ -106,4 +106,10 @@ generate_voice("请在键盘上找到目标并按下！", "Tingting", "public/au
 generate_voice("小火车进站啦，按数字键装满车厢吧！", "Tingting", "public/audio/prompts/train_start.m4a")
 generate_voice("太棒啦，答对啦！", "Tingting", "public/audio/prompts/correct.m4a")
 
+# 5. Word Builder puzzle reward voice (EGG is a puzzle word but not an Easter
+#    Egg word, so its celebration audio lives alongside the egg voices).
+#    Note: the other public/audio/eggs/*.m4a files predate this script and are
+#    NOT regenerated here - don't delete them before backing them up.
+generate_voice("Egg！鸡蛋！咔哒咔哒！", "Tingting", "public/audio/eggs/EGG.m4a")
+
 print("All root and multi-language audio files refreshed without any prefixes!")

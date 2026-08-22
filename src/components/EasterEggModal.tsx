@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { EasterEggWord } from '../data/gameData';
 import { soundEngine } from '../utils/soundEngine';
@@ -10,6 +10,13 @@ interface EasterEggModalProps {
 }
 
 export const EasterEggModal: React.FC<EasterEggModalProps> = ({ egg, onClose }) => {
+  // Keep the latest onClose in a ref so the celebration effect below can stay
+  // keyed on `egg` alone - otherwise every parent re-render (e.g. key presses
+  // while the modal is open) replays the full confetti + voice celebration
+  // and restarts the auto-close timer.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!egg) return;
 
@@ -40,14 +47,14 @@ export const EasterEggModal: React.FC<EasterEggModalProps> = ({ egg, onClose }) 
     soundEngine.playEggVoice(egg.word);
 
     const autoCloseTimer = setTimeout(() => {
-      onClose();
+      onCloseRef.current();
     }, 4500);
 
     return () => {
       clearTimeout(timer2);
       clearTimeout(autoCloseTimer);
     };
-  }, [egg, onClose]);
+  }, [egg]);
 
   if (!egg) return null;
 

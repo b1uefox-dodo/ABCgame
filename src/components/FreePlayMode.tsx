@@ -7,6 +7,32 @@ import { soundEngine } from '../utils/soundEngine';
 import { MascotPet } from './MascotPet';
 import { Volume2, Move } from 'lucide-react';
 
+// roundRect needs Safari 16.4+/Chrome 99+; without this fallback the first
+// subtitle-pill draw throws and permanently kills the requestAnimationFrame
+// render loop on older browsers (common on hand-me-down iPads).
+if (
+  typeof CanvasRenderingContext2D !== 'undefined' &&
+  !CanvasRenderingContext2D.prototype.roundRect
+) {
+  CanvasRenderingContext2D.prototype.roundRect = function (
+    this: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    radii?: number | DOMPointInit | (number | DOMPointInit)[]
+  ) {
+    const r = typeof radii === 'number' ? radii : 0;
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+    return this;
+  };
+}
+
 interface FreePlayModeProps {
   currentTheme: WorldTheme;
   latestKeyPress: KeyPress | null;
