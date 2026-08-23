@@ -1,6 +1,5 @@
 import os
 import subprocess
-import shutil
 
 modes = ['bilingual', 'en', 'zh']
 for m in modes:
@@ -64,16 +63,10 @@ for letter, items in letters_data.items():
     generate_voice(f"{letter}, {primary_en}!", "Samantha", f"public/audio/letters/en/{letter}.m4a", rate="160")
     generate_voice(f"{letter}，{primary_cn}！", "Tingting", f"public/audio/letters/zh/{letter}.m4a")
     
-    # Also write to root of public/audio/letters/
-    shutil.copyfile(f"public/audio/letters/bilingual/{letter}.m4a", f"public/audio/letters/{letter}.m4a")
-    
     for idx, (name_en, name_cn) in enumerate(items):
         generate_voice(f"{letter}，{name_en}，{name_cn}！", "Tingting", f"public/audio/letters/bilingual/{letter}_{idx}.m4a")
         generate_voice(f"{letter}, {name_en}!", "Samantha", f"public/audio/letters/en/{letter}_{idx}.m4a", rate="160")
         generate_voice(f"{letter}，{name_cn}！", "Tingting", f"public/audio/letters/zh/{letter}_{idx}.m4a")
-        
-        # Also copy bilingual to root
-        shutil.copyfile(f"public/audio/letters/bilingual/{letter}_{idx}.m4a", f"public/audio/letters/{letter}_{idx}.m4a")
 
 # 2. Numbers in 3 Language Modes (Direct number pronunciation, no '数字'/'Number')
 numbers_data = [
@@ -97,9 +90,6 @@ for num, name_en, name_cn, count_str in numbers_data:
     # Chinese only: "5，五，5 颗金星星！"
     generate_voice(f"{num}，{name_cn}，{num} {count_str}！", "Tingting", f"public/audio/numbers/zh/{num}.m4a")
     
-    # Also copy bilingual to root of public/audio/numbers/
-    shutil.copyfile(f"public/audio/numbers/bilingual/{num}.m4a", f"public/audio/numbers/{num}.m4a")
-
 # 3. Language Switch Announcement Prompts
 generate_voice("已开启中英双语发音！", "Tingting", "public/audio/prompts/mode_bilingual.m4a")
 generate_voice("English voice mode activated!", "Samantha", "public/audio/prompts/mode_en.m4a", rate="160")
