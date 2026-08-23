@@ -209,8 +209,8 @@ export class PhysicsWorld {
         e.vx = -Math.abs(e.vx) * this.bounceDamping;
       }
 
-      // Lifespan decay (20s)
-      if (Date.now() - e.createdAt > 20000) {
+      // Lifespan decay (callers pass 20000ms)
+      if (Date.now() - e.createdAt > e.lifespan) {
         this.entities.splice(i, 1);
       }
     }

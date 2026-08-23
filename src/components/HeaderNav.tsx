@@ -129,7 +129,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           >
             <BookOpen className="w-4 h-4" />
             <span className="hidden sm:inline">探索图鉴</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-yellow-300 text-indigo-950 font-black text-[11px]">
+            <span className="px-1.5 py-[2px] rounded-full bg-yellow-300 text-indigo-950 font-black text-[11px]">
               {discoveredCount}
             </span>
           </button>

@@ -49,7 +49,15 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
   mascotAction
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const physicsWorldRef = useRef<PhysicsWorld>(new PhysicsWorld());
+  // Lazy-init: a plain useRef(new PhysicsWorld()) would construct a throw-away
+  // world (plus its setup work) on every render.
+  const physicsWorldRef = useRef<PhysicsWorld | null>(null);
+  const getWorld = () => {
+    if (!physicsWorldRef.current) {
+      physicsWorldRef.current = new PhysicsWorld();
+    }
+    return physicsWorldRef.current;
+  };
   const [heroCard, setHeroCard] = useState<{
     symbol: string;
     emoji: string;
@@ -88,7 +96,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
 
     const key = latestKeyPress.key;
     const upperKey = key.toUpperCase();
-    const world = physicsWorldRef.current;
+    const world = getWorld();
 
     // --- Special Keys ---
     if (key === ' ' || key === 'Space') {
@@ -136,7 +144,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
         rotation: (Math.random() - 0.5) * 20,
         scale: 0.3,
         targetScale: 1,
-        lifespan: 35000
+        lifespan: 20000
       });
 
       // Sound & Speech
@@ -190,7 +198,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
             rotation: (Math.random() - 0.5) * 15,
             scale: 0.3,
             targetScale: 1,
-            lifespan: 35000
+            lifespan: 20000
           });
         }, i * 90);
       }
@@ -250,7 +258,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
     soundEngine.playFanfare();
     setActiveGiftBox((prev) => (prev ? { ...prev, isOpen: true } : null));
 
-    const world = physicsWorldRef.current;
+    const world = getWorld();
     world.createSpawnExplosion(
       world.width / 2,
       world.height / 2,
@@ -274,7 +282,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
       rotation: 0,
       scale: 0.5,
       targetScale: 1.3,
-      lifespan: 45000
+      lifespan: 20000
     });
 
     setTimeout(() => {
@@ -287,7 +295,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
     soundEngine.playVacuum();
     soundEngine.playVoiceFile('/audio/prompts/vacuum.m4a');
 
-    const world = physicsWorldRef.current;
+    const world = getWorld();
     world.clearEntities();
 
     setTimeout(() => {
@@ -306,13 +314,13 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      physicsWorldRef.current.updateDimensions();
+      getWorld().updateDimensions();
     };
     handleResize();
     window.addEventListener('resize', handleResize);
 
     const render = () => {
-      const world = physicsWorldRef.current;
+      const world = getWorld();
       world.update();
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -428,7 +436,7 @@ export const FreePlayMode: React.FC<FreePlayModeProps> = ({
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    const world = physicsWorldRef.current;
+    const world = getWorld();
     for (let i = world.entities.length - 1; i >= 0; i--) {
       const ent = world.entities[i];
       const dist = Math.hypot(clickX - ent.x, clickY - ent.y);

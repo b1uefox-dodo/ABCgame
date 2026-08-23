@@ -208,7 +208,7 @@ export const WordBuilderMode: React.FC<WordBuilderModeProps> = ({
             return (
               <div
                 key={idx}
-                className={`w-14 h-16 sm:w-18 sm:h-20 rounded-2xl sm:rounded-3xl border-4 flex items-center justify-center text-3xl sm:text-4xl font-black shadow-lg transition-all duration-300 ${
+                className={`w-14 h-16 sm:w-[4.5rem] sm:h-20 rounded-2xl sm:rounded-3xl border-4 flex items-center justify-center text-3xl sm:text-4xl font-black shadow-lg transition-all duration-300 ${
                   showChar
                     ? isCompleted
                       ? 'bg-gradient-to-tr from-emerald-400 to-teal-400 text-white border-emerald-300 scale-105 animate-pop-in'

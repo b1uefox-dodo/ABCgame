@@ -30,7 +30,7 @@ letters_data = {
     'E': [('Elephant', '大象'), ('Egg', '彩蛋'), ('Earth', '地球'), ('Eagle', '雄鹰')],
     'F': [('Fish', '金鱼'), ('Frog', '小青蛙'), ('Fox', '小狐狸'), ('Flower', '向日葵')],
     'G': [('Giraffe', '长颈鹿'), ('Grapes', '葡萄'), ('Guitar', '吉他'), ('Gift', '礼物盒')],
-    'H': [('Heart', '爱心'), ('House', '城堡小屋'), ('Horse', '小斑马'), ('Hat', '魔法帽')],
+    'H': [('Heart', '爱心'), ('House', '城堡小屋'), ('Horse', '小马'), ('Hat', '魔法帽')],
     'I': [('Ice Cream', '冰淇淋'), ('Igloo', '冰屋'), ('Island', '海岛')],
     'J': [('Jellyfish', '水母'), ('Juice', '橙汁'), ('Jaguar', '小豹子')],
     'K': [('Kangaroo', '袋鼠'), ('Kite', '风筝'), ('Koala', '考拉'), ('Key', '魔法钥匙')],
@@ -45,11 +45,15 @@ letters_data = {
     'T': [('Tiger', '小老虎'), ('Train', '小火车'), ('Tree', '大树'), ('Turtle', '小乌龟')],
     'U': [('Umbrella', '雨伞'), ('Unicorn', '独角兽'), ('UFO', '飞碟')],
     'V': [('Violin', '小提琴'), ('Volcano', '小火山'), ('Van', '小货车')],
-    'W': [('Whale', '大鲸鱼'), ('Watermelon', '西瓜'), ('Windmill', '大风车')],
+    'W': [('Whale', '大鲸鱼'), ('Watermelon', '西瓜'), ('Wolf', '小灰狼')],
     'X': [('Xylophone', '木琴'), ('X-ray', '透视光波')],
     'Y': [('Yo-Yo', '悠悠球'), ('Yacht', '帆船'), ('Yarn', '毛线球')],
     'Z': [('Zebra', '斑马'), ('Zoo', '动物园')]
 }
+
+# NOTE - audio files on disk NOT managed by this script (back them up before
+# deleting): public/audio/eggs/*.m4a (except EGG.m4a) and the prompts
+# confetti / gift / goodbye / vacuum / whistle / wrong / wrong_en.
 
 # 1. Letters in 3 Language Modes (Direct letter pronunciation, no '字母'/'Letter')
 for letter, items in letters_data.items():

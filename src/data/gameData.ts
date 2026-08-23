@@ -392,12 +392,12 @@ export const LETTERS_DATA: Record<string, LetterData> = {
       },
       {
         name: 'Horse',
-        nameCn: '小斑马',
-        emoji: '🦓',
+        nameCn: '小马',
+        emoji: '🐴',
         color: '#6B7280',
         soundType: 'boing',
         action: 'bounce',
-        funFact: '哒哒哒！小斑马穿着条纹衣在草地上奔跑！'
+        funFact: '哒哒哒！勇敢的小马驹在草原上快乐地奔跑！'
       },
       {
         name: 'Hat',
@@ -973,13 +973,13 @@ export const LETTERS_DATA: Record<string, LetterData> = {
         funFact: '夏天吃上一口冰甜的大西瓜，清凉解渴！'
       },
       {
-        name: 'Windmill',
-        nameCn: '大风车',
-        emoji: '🛞',
-        color: '#F59E0B',
-        soundType: 'swoosh',
-        action: 'spin',
-        funFact: '微风轻轻吹拂，大风车呼噜噜转个不停！'
+        name: 'Wolf',
+        nameCn: '小灰狼',
+        emoji: '🐺',
+        color: '#6B7280',
+        soundType: 'roar',
+        action: 'wiggle',
+        funFact: '嗷呜～聪明的小灰狼对着圆圆的月亮唱歌！'
       }
     ]
   },
@@ -1099,11 +1099,11 @@ export const NUMBERS_DATA: NumberData[] = [
     name: 'Two',
     nameCn: '二',
     pinyin: 'èr',
-    emoji: '🦆',
+    emoji: '🦢',
     color: '#F97316',
     note: 'E4',
     freq: 329.63,
-    countItem: { emoji: '🦆', nameCn: '只小天鹅' },
+    countItem: { emoji: '🦢', nameCn: '只小天鹅' },
     funFact: '数字 2 像一只游在水里的小天鹅！'
   },
   {

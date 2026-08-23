@@ -78,39 +78,39 @@ export const MascotPet: React.FC<MascotPetProps> = ({
       className="fixed bottom-[200px] sm:bottom-[210px] z-30 transition-all duration-300 pointer-events-auto select-none"
       style={{
         left: `${posX}px`,
-        transform: `translateX(-50%) ${facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`
+        transform: 'translateX(-50%)'
       }}
     >
-      {/* Speech Bubble */}
-      <div
-        className="absolute -top-16 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 text-slate-800 font-extrabold text-xs sm:text-sm px-3.5 py-1.5 rounded-2xl shadow-xl border-2 border-indigo-400 animate-float pointer-events-none"
-        style={{
-          transform:
-            facing === 'left' ? 'translateX(-50%) scaleX(-1)' : 'translateX(-50%) scaleX(1)'
-        }}
-      >
-        <span>{speechBubble}</span>
-        {/* Tail */}
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 border-solid border-t-white border-t-8 border-x-transparent border-x-8 border-b-0" />
+      {/* Speech Bubble - positioning lives on the outer div so the float
+          animation (which overrides the transform property) cannot break
+          the centering, and the bubble never mirrors with the mascot */}
+      <div className="absolute -top-16 left-1/2 -translate-x-1/2 pointer-events-none">
+        <div className="whitespace-nowrap bg-white/95 text-slate-800 font-extrabold text-xs sm:text-sm px-3.5 py-1.5 rounded-2xl shadow-xl border-2 border-indigo-400 animate-float">
+          <span>{speechBubble}</span>
+          {/* Tail */}
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 border-solid border-t-white border-t-8 border-x-transparent border-x-8 border-b-0" />
+        </div>
       </div>
 
-      {/* Mascot Avatar Body */}
-      <div
-        onClick={handleTickle}
-        className={`cursor-pointer transition-transform duration-200 ${
-          isJumping
-            ? '-translate-y-16 scale-125'
-            : isWiggling
-              ? 'scale-90 rotate-12'
-              : 'animate-bounce-soft'
-        }`}
-      >
-        <div className="relative group">
-          {/* Glowing aura */}
-          <div className="absolute -inset-2 bg-gradient-to-r from-yellow-300 to-pink-400 rounded-full blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
+      {/* Mascot Avatar Body (flips horizontally to face the move direction) */}
+      <div style={{ transform: facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)' }}>
+        <div
+          onClick={handleTickle}
+          className={`cursor-pointer transition-transform duration-200 ${
+            isJumping
+              ? '-translate-y-16 scale-125'
+              : isWiggling
+                ? 'scale-90 rotate-12'
+                : 'animate-bounce-soft'
+          }`}
+        >
+          <div className="relative group">
+            {/* Glowing aura */}
+            <div className="absolute -inset-2 bg-gradient-to-r from-yellow-300 to-pink-400 rounded-full blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
 
-          <div className="relative text-6xl sm:text-7xl filter drop-shadow-2xl active:scale-90 transition-transform">
-            {mascotEmoji}
+            <div className="relative text-6xl sm:text-7xl filter drop-shadow-2xl active:scale-90 transition-transform">
+              {mascotEmoji}
+            </div>
           </div>
         </div>
       </div>

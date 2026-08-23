@@ -141,7 +141,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                     style={{
                       backgroundColor: active ? '#FDE047' : undefined
                     }}
-                    className={`key-cap relative flex-1 h-11 sm:h-13 max-w-[62px] rounded-xl sm:rounded-2xl flex flex-col items-center justify-center font-extrabold text-sm sm:text-lg transition-all duration-75 shadow-[0_4px_0_rgba(0,0,0,0.28)] ${
+                    className={`key-cap relative flex-1 h-11 sm:h-[3.25rem] max-w-[62px] rounded-xl sm:rounded-2xl flex flex-col items-center justify-center font-extrabold text-sm sm:text-lg transition-all duration-75 shadow-[0_4px_0_rgba(0,0,0,0.28)] ${
                       active
                         ? 'text-slate-900 scale-95 translate-y-1 shadow-[0_1px_0_rgba(0,0,0,0.2)] ring-4 ring-yellow-400'
                         : target
